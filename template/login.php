@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi</title>
+    <title>Login</title>
     <style>
         body {
             margin: 0;
@@ -79,10 +79,10 @@
         <div class="container-fluid px-5">
             <div class="row align-items-center">
                 <div class="col">
-                    <img src="assets/img/images.png" style="height: 90px; " >
+                    <img src="assets/img/images.png" style="height: 90px;">
                 </div>
                 <div class="col">
-                    <h1>IT SAFE</h1> 
+                    <h1>IT SAFE</h1>
                 </div>
                 <div class="col text-right">
                     <div class="d-flex flex-column align-items-end">
@@ -94,20 +94,16 @@
     <br>
 
     <div class="container">
-        <h2 style="color : white; text-align: center ">Log In</h2>
-        <form action="register.php" method="post">
+        <h2 style="color: white; text-align: center;">Log In</h2>
+        <form action="template/loginx.php" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" placeholder="Masukkan username" required>
             
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Masukkan email" required>
-
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" placeholder="Masukkan password" required>
 
             <div style="text-align: center;">
                 <button type="submit">Log In</button>
-            
             </div>
         </form>
         <br>
@@ -116,12 +112,38 @@
     <br>
     <br>
     <br>
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+
+            // Set initial value with @ if it's empty
+            if (usernameInput.value === '') {
+                usernameInput.value = '@';
+            }
+
+            usernameInput.addEventListener('input', function(event) {
+                const value = event.target.value;
+
+                // If the first character is not @, reset the value to start with @
+                if (!value.startsWith('@')) {
+                    event.target.value = '@';
+                }
+            });
+
+            usernameInput.addEventListener('keydown', function(event) {
+                // Prevent user from deleting the @ symbol
+                if (event.key === 'Backspace' && usernameInput.selectionStart <= 1) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 
 <footer>
-        <div>
-            <small>&copy; 2024. It Safe Company | All rights reserved.</small>
-        </div>
-    </footer>
+    <div>
+        <small>&copy; 2024. IT SAFE Company | All rights reserved.</small>
+    </div>
+</footer>
 </html>

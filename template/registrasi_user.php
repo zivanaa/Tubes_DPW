@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,37 +11,46 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
+
         .header {
             background-color: #11174F;
             color: #fff;
             padding: 20px;
             text-align: center;
         }
+
         .header img {
             height: 90px;
         }
+
         .header h1 {
             font-size: 28px;
             font-weight: bold;
             margin: 0;
         }
+
         .container {
             background-color: #11174F;
             margin: 0 auto;
             padding: 20px;
             max-width: 600px;
         }
+
         form {
             background-color: #fff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         label {
             display: block;
             margin-bottom: 10px;
         }
-        input[type="text"], input[type="email"], input[type="password"] {
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -48,6 +58,7 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+
         button {
             background-color: #1da1f2;
             color: #fff;
@@ -57,9 +68,11 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #0d8cd1;
         }
+
         footer {
             background-color: #11174F;
             color: white;
@@ -69,20 +82,22 @@
             bottom: 0;
             width: 100%;
         }
+
         footer small {
             font-size: 12px;
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div class="container-fluid px-5">
             <div class="row align-items-center">
                 <div class="col">
-                    <img src="assets/img/images.png" style="height: 90px; " >
+                    <img src="assets/img/images.png" style="height: 90px;">
                 </div>
                 <div class="col">
-                    <h1>IT SAFE</h1> 
+                    <h1>IT SAFE</h1>
                 </div>
                 <div class="col text-right">
                     <div class="d-flex flex-column align-items-end">
@@ -94,14 +109,14 @@
     <br>
 
     <div class="container">
-        <h2 style="color : white; text-align: center ">Registrasi User</h2>
-        <form action="register.php" method="post">
-            <label for="username">Name:</label>
-            <input type="text" id="username" name="username" placeholder="Masukkan username" required>
-            
+        <h2 style="color: white; text-align: center;">Registrasi User</h2>
+        <form action="template/register.php" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Masukkan nama" required>
+
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" placeholder="Masukkan username" required>
-            
+
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="Masukkan email" required>
 
@@ -123,12 +138,39 @@
     <br>
     <br>
     <br>
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+
+            // Set initial value with @ if it's empty
+            if (usernameInput.value === '') {
+                usernameInput.value = '@';
+            }
+
+            usernameInput.addEventListener('input', function(event) {
+                const value = event.target.value;
+
+                // If the first character is not @, reset the value to start with @
+                if (!value.startsWith('@')) {
+                    event.target.value = '@';
+                }
+            });
+
+            usernameInput.addEventListener('keydown', function(event) {
+                // Prevent user from deleting the @ symbol
+                if (event.key === 'Backspace' && usernameInput.selectionStart <= 1) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 
 <footer>
-        <div>
-            <small>&copy; 2024. It Safe Company | All rights reserved.</small>
-        </div>
-    </footer>
+    <div>
+        <small>&copy; 2024. IT SAFE Company | All rights reserved.</small>
+    </div>
+</footer>
+
 </html>
