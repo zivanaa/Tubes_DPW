@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $created_at = $_POST['created_at'];
 
         // Update data konten
-        $query = "UPDATE posts SET content='$content', image='$image', `likes`='$likes', dislikes='$dislikes', comments_count='$comments_count', created_at='$created_at' WHERE user_id='$id'";
+        $query = "UPDATE posts SET content='$content', image='$image', `likes`='$likes', dislikes='$dislikes', comments_count='$comments_count', created_at='$created_at' WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil diperbarui!";
         } else {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = $_POST['id'];
 
         // Hapus data konten
-        $query = "DELETE FROM posts WHERE user_id='$id'";
+        $query = "DELETE FROM posts WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil dihapus!";
         } else {
@@ -252,7 +252,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     </style>
     <script>
-        function openUpdateModal(user_id, content, image, likes, dislikes, commentsCount, createdAt) {
+        function openUpdateModal(id, user_id, content, image, likes, dislikes, commentsCount, createdAt) {
+            document.getElementById('updateId').value = id;
             document.getElementById('updateUserId').value = user_id;
             document.getElementById('updateContent').value = content;
             document.getElementById('updateImage').value = image;
@@ -263,9 +264,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('updateModal').style.display = 'flex';
         }
 
-        function openDeleteForm(userId) {
+        function openDeleteForm(id) {
             if (confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
-                document.getElementById('deleteUserId').value = userId;
+                document.getElementById('deleteId').value = id;
                 document.getElementById('deleteForm').submit();
             }
         }
@@ -294,6 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>User ID</th>
                         <th>Content</th>
                         <th>Image</th>
@@ -316,12 +318,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
 
                     // Query untuk mendapatkan data konten
-                    $query = "SELECT user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
+                    $query = "SELECT id, user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
                     $result = mysqli_query($koneksi, $query);
 
                     // Tampilkan data konten dalam bentuk tabel
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr>";
+                        echo "<td>" . $row['id'] . "</td>";
                         echo "<td>" . $row['user_id'] . "</td>";
                         echo "<td>" . $row['content'] . "</td>";
                         echo "<td>" . $row['image'] . "</td>";
@@ -330,8 +333,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         echo "<td>" . $row['comments_count'] . "</td>";
                         echo "<td>" . $row['created_at'] . "</td>";
                         echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openUpdateModal('".$row['user_id']."', '".$row['content']."', '".$row['image']."', '".$row['likes']."', '".$row['dislikes']."', '".$row['comments_count']."', '".$row['created_at']."')\">Update</button>";
-                        echo "<button onclick=\"openDeleteForm('".$row['user_id']."')\">Hapus</button>";
+                        echo "<button onclick=\"openUpdateModal('".$row['id']."', '".$row['user_id']."', '".$row['content']."', '".$row['image']."', '".$row['likes']."', '".$row['dislikes']."', '".$row['comments_count']."', '".$row['created_at']."')\">Update</button>";
+                        echo "<button onclick=\"openDeleteForm('".$row['id']."')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
                     }
@@ -351,7 +354,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <span class="close" onclick="closeModal('updateModal')">&times;</span>
                     <h2>Update Data Konten</h2>
                     <form id="updateForm" method="post" class="update-form">
-                        <input type="hidden" name="id" id="updateUserId">
+                        <input type="hidden" name="id" id="updateId">
+                        <div class="form-group">
+                            <label for="updateUserId">User ID:</label>
+                            <input type="text" name="user_id" id="updateUserId" required>
+                        </div>
                         <div class="form-group">
                             <label for="updateContent">Content:</label>
                             <input type="text" name="content" id="updateContent" required>
@@ -386,7 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <!-- Form untuk Hapus -->
             <form id="deleteForm" method="post" style="display:none;">
-                <input type="hidden" name="id" id="deleteUserId">
+                <input type="hidden" name="id" id="deleteId">
                 <input type="hidden" name="delete" value="true">
             </form>
         </main>
@@ -396,4 +403,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </footer>
 </body>
 </html>
-
