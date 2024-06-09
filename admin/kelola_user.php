@@ -43,6 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+
+// Ambil nilai pencarian dari form pencarian
+$search = "";
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -52,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Panel</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Styling yang sama seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -73,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .header img {
-            height: 40px; /* Sesuaikan tinggi logo dengan tinggi teks */
-            width: auto; /* Pertahankan rasio aspek logo */
+            height: 40px;
+            width: auto;
         }
 
         .container {
@@ -245,6 +252,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         #messagePopup button:hover {
             background-color: #333;
         }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 300px;
+            background-color: #d7d7d9;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .search-bar button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #11174F;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #333;
+        }
     </style>
     <script>
         function openModal(userId, name, username, email, role) {
@@ -299,6 +334,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </aside>
         <main class="main-content">
             <h1 style="text-align: center;">Data Pengguna</h1>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <form method="get">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Cari...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -312,32 +356,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </thead>
                 <tbody>
                     <?php
-                    // Koneksi ke database
-                    $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
-
-                    // Periksa koneksi
-                    if (mysqli_connect_errno()) {
-                        echo "Koneksi database gagal: " . mysqli_connect_error();
-                        exit();
-                    }
-
-                    // Query untuk mendapatkan data pengguna
+                    // Query untuk mendapatkan data pengguna dengan filter pencarian
                     $query = "SELECT id, name, username, email, role, created_at FROM users";
+                    if (!empty($search)) {
+                        $query .= " WHERE name LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    username LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    email LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    role LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%'";
+                    }
                     $result = mysqli_query($koneksi, $query);
 
                     // Tampilkan data pengguna dalam bentuk tabel
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        echo "<tr>";
-                        echo "<td>" . $row['name'] . "</td>";
-                        echo "<td>" . $row['username'] . "</td>";
-                        echo "<td>" . $row['email'] . "</td>";
-                        echo "<td>" . $row['role'] . "</td>";
-                        echo "<td>" . $row['created_at'] . "</td>";
-                        echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openModal('".$row['id']."', '".$row['name']."', '".$row['username']."', '".$row['email']."', '".$row['role']."')\">Update</button>";
-                        echo "<button onclick=\"deleteUser('".$row['id']."')\">Hapus</button>";
-                        echo "</td>";
-                        echo "</tr>";
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            echo "<tr>";
+                            echo "<td>" . $row['name'] . "</td>";
+                            echo "<td>" . $row['username'] . "</td>";
+                            echo "<td>" . $row['email'] . "</td>";
+                            echo "<td>" . $row['role'] . "</td>";
+                            echo "<td>" . $row['created_at'] . "</td>";
+                            echo "<td class='action-buttons'>";
+                            echo "<button onclick=\"openModal('".$row['id']."', '".$row['name']."', '".$row['username']."', '".$row['email']."', '".$row['role']."')\">Update</button>";
+                            echo "<button onclick=\"deleteUser('".$row['id']."')\">Hapus</button>";
+                            echo "</td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='6' style='text-align:center;'>Data tidak terdaftar</td></tr>";
                     }
 
                     // Bebaskan hasil query

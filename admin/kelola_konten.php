@@ -39,6 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+
+// Periksa apakah ada pencarian
+$search = "";
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -49,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Panel It Safe</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* CSS yang sama seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -70,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .header img {
-            height: 40px; /* Sesuaikan tinggi logo dengan tinggi teks */
-            width: auto; /* Pertahankan rasio aspek logo */
+            height: 40px;
+            width: auto;
         }
 
         .container {
@@ -149,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         .action-buttons button {
             margin-right: 5px;
-            background-color: #567cba; /* Warna biru muda */
+            background-color: #567cba; 
             color: white;
             padding: 10px 20px;
             border: none;
@@ -158,10 +165,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .action-buttons button:hover {
-            background-color: #87cefa; /* Warna biru lebih terang saat hover */
+            background-color: #87cefa; 
         }
 
-        /* CSS untuk Modal Form Update */
         .modal {
             display: none;
             position: fixed;
@@ -212,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn-update {
-            background-color: #567cba; /* Warna biru muda */
+            background-color: #567cba;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -221,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn-update:hover {
-            background-color: #87cefa; /* Warna biru lebih terang saat hover */
+            background-color: #87cefa;
         }
 
         .cancel-button {
@@ -249,6 +255,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #000;
             text-decoration: none;
             cursor: pointer;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 300px;
+            background-color: #d7d7d9;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .search-bar button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #11174F;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #333;
         }
     </style>
     <script>
@@ -292,6 +326,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </aside>
         <main class="main-content">
             <h1 style="text-align: center;">Data Konten</h1>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <form method="get" action="">
+                    <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Cari konten...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -308,17 +351,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </thead>
                 <tbody>
                     <?php
-                    // Koneksi ke database
-                    $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
-
-                    // Periksa koneksi
-                    if (mysqli_connect_errno()) {
-                        echo "Koneksi database gagal: " . mysqli_connect_error();
-                        exit();
-                    }
-
                     // Query untuk mendapatkan data konten
                     $query = "SELECT id, user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
+
+                    if (!empty($search)) {
+                        $query .= " WHERE content LIKE '%$search%' OR user_id LIKE '%$search%'";
+                    }
+
                     $result = mysqli_query($koneksi, $query);
 
                     // Tampilkan data konten dalam bentuk tabel
@@ -337,6 +376,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         echo "<button onclick=\"openDeleteForm('".$row['id']."')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
+                    }
+
+                    if (mysqli_num_rows($result) == 0) {
+                        echo "<tr><td colspan='9' style='text-align:center;'>Data tidak terdaftar</td></tr>";
                     }
 
                     // Bebaskan hasil query
