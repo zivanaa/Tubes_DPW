@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Koneksi ke database
-    $koneksi = new mysqli("localhost", "root", "", "tubes_dpw");
+    $koneksi = new mysqli("localhost", "root", "", "db_itsave");
 
     // Periksa koneksi
     if ($koneksi->connect_error) {

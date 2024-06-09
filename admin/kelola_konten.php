@@ -1,6 +1,6 @@
 <?php
 // Koneksi ke database
-$koneksi = mysqli_connect("localhost", "root", "", "tubes_dpw");
+$koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
 
 // Periksa koneksi
 if (mysqli_connect_errno()) {
@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tbody>
                     <?php
                     // Koneksi ke database
-                    $koneksi = mysqli_connect("localhost", "root", "", "tubes_dpw");
+                    $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
 
                     // Periksa koneksi
                     if (mysqli_connect_errno()) {
