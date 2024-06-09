@@ -10,6 +10,16 @@
     $(element).closest(".card-body").find(".selengkapnya").show(); // Tampilkan tombol "penjelasan singkat" kembali
   }
 </script>
+<?php
+// Start session
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+?>
 
 <?php include "header.php"; ?>
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">

@@ -1,10 +1,14 @@
 <?php
+$servername = "localhost"; // sesuaikan dengan server Anda
+$username = "root"; // sesuaikan dengan username MySQL Anda
+$password = ""; // sesuaikan dengan password MySQL Anda
+$dbname = "db_itsave"; // sesuaikan dengan nama database Anda
 
-$koneksi = mysqli_connect("localhost","root","","db_itsave"); //ip,root,pass db, anama db
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-if (mysqli_connect_errno()){
-    echo "koneksi database gagal : " . mysqli_connect_error();
-
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
-
 ?>
