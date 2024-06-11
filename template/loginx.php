@@ -41,9 +41,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Set session variables
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
 
-            // Redirect to home page with the mod parameter
-            header("Location: ../page.php?mod=home");
+            // Redirect based on user role
+            if ($user['role'] === 'admin') {
+                header("Location: ../admin/reg_advo.php");
+            } else {
+                header("Location: ../page.php?mod=home");
+            }
             exit();
         } else {
             echo "<script>alert('Username or password is incorrect.'); window.location.href='login.php';</script>";

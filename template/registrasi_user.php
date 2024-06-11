@@ -131,8 +131,8 @@
             </div>
         </form>
 
-        <p style="text-align: center; color: white;">Sudah punya akun? <a href="login.php" style="color: #1da1f2;">Login</a></p>
-        <p style="text-align: center; color: white;">Anda Adokad? <a href="login.php" style="color: #1da1f2;">Register Adokad</a></p>
+        <p style="text-align: center; color: white;">Sudah punya akun? <a href="page.php?mod=login" style="color: #1da1f2;">Login</a></p>
+        <!-- <p style="text-align: center; color: white;">Anda Adokad? <a href="admin/reg_advo.php" style="color: #1da1f2;">Register Adokad</a></p> -->
     </div>
     <br>
     <br>
