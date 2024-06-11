@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $created_at = $_POST['created_at'];
 
         // Update data konten
-        $query = "UPDATE posts SET content='$content', image='$image', `likes`='$likes', dislikes='$dislikes', comments_count='$comments_count', created_at='$created_at' WHERE user_id='$id'";
+        $query = "UPDATE posts SET content='$content', image='$image', `likes`='$likes', dislikes='$dislikes', comments_count='$comments_count', created_at='$created_at' WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil diperbarui!";
         } else {
@@ -31,13 +31,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = $_POST['id'];
 
         // Hapus data konten
-        $query = "DELETE FROM posts WHERE user_id='$id'";
+        $query = "DELETE FROM posts WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil dihapus!";
         } else {
             $message = "Error: " . mysqli_error($koneksi);
         }
     }
+}
+
+// Periksa apakah ada pencarian
+$search = "";
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
 }
 ?>
 
@@ -49,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Panel It Safe</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* CSS yang sama seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -70,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .header img {
-            height: 40px; /* Sesuaikan tinggi logo dengan tinggi teks */
-            width: auto; /* Pertahankan rasio aspek logo */
+            height: 40px;
+            width: auto;
         }
 
         .container {
@@ -149,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         .action-buttons button {
             margin-right: 5px;
-            background-color: #567cba; /* Warna biru muda */
+            background-color: #567cba; 
             color: white;
             padding: 10px 20px;
             border: none;
@@ -158,10 +165,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .action-buttons button:hover {
-            background-color: #87cefa; /* Warna biru lebih terang saat hover */
+            background-color: #87cefa; 
         }
 
-        /* CSS untuk Modal Form Update */
         .modal {
             display: none;
             position: fixed;
@@ -212,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn-update {
-            background-color: #567cba; /* Warna biru muda */
+            background-color: #567cba;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -221,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn-update:hover {
-            background-color: #87cefa; /* Warna biru lebih terang saat hover */
+            background-color: #87cefa;
         }
 
         .cancel-button {
@@ -250,9 +256,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             text-decoration: none;
             cursor: pointer;
         }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 300px;
+            background-color: #d7d7d9;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .search-bar button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #11174F;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #333;
+        }
     </style>
     <script>
-        function openUpdateModal(user_id, content, image, likes, dislikes, commentsCount, createdAt) {
+        function openUpdateModal(id, user_id, content, image, likes, dislikes, commentsCount, createdAt) {
+            document.getElementById('updateId').value = id;
             document.getElementById('updateUserId').value = user_id;
             document.getElementById('updateContent').value = content;
             document.getElementById('updateImage').value = image;
@@ -263,9 +298,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('updateModal').style.display = 'flex';
         }
 
-        function openDeleteForm(userId) {
+        function openDeleteForm(id) {
             if (confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
-                document.getElementById('deleteUserId').value = userId;
+                document.getElementById('deleteId').value = id;
                 document.getElementById('deleteForm').submit();
             }
         }
@@ -291,9 +326,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </aside>
         <main class="main-content">
             <h1 style="text-align: center;">Data Konten</h1>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <form method="get" action="">
+                    <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Cari konten...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>User ID</th>
                         <th>Content</th>
                         <th>Image</th>
@@ -306,22 +351,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </thead>
                 <tbody>
                     <?php
-                    // Koneksi ke database
-                    $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
+                    // Query untuk mendapatkan data konten
+                    $query = "SELECT id, user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
 
-                    // Periksa koneksi
-                    if (mysqli_connect_errno()) {
-                        echo "Koneksi database gagal: " . mysqli_connect_error();
-                        exit();
+                    if (!empty($search)) {
+                        $query .= " WHERE content LIKE '%$search%' OR user_id LIKE '%$search%'";
                     }
 
-                    // Query untuk mendapatkan data konten
-                    $query = "SELECT user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
                     $result = mysqli_query($koneksi, $query);
 
                     // Tampilkan data konten dalam bentuk tabel
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr>";
+                        echo "<td>" . $row['id'] . "</td>";
                         echo "<td>" . $row['user_id'] . "</td>";
                         echo "<td>" . $row['content'] . "</td>";
                         echo "<td>" . $row['image'] . "</td>";
@@ -330,10 +372,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         echo "<td>" . $row['comments_count'] . "</td>";
                         echo "<td>" . $row['created_at'] . "</td>";
                         echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openUpdateModal('".$row['user_id']."', '".$row['content']."', '".$row['image']."', '".$row['likes']."', '".$row['dislikes']."', '".$row['comments_count']."', '".$row['created_at']."')\">Update</button>";
-                        echo "<button onclick=\"openDeleteForm('".$row['user_id']."')\">Hapus</button>";
+                        echo "<button onclick=\"openUpdateModal('".$row['id']."', '".$row['user_id']."', '".$row['content']."', '".$row['image']."', '".$row['likes']."', '".$row['dislikes']."', '".$row['comments_count']."', '".$row['created_at']."')\">Update</button>";
+                        echo "<button onclick=\"openDeleteForm('".$row['id']."')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
+                    }
+
+                    if (mysqli_num_rows($result) == 0) {
+                        echo "<tr><td colspan='9' style='text-align:center;'>Data tidak terdaftar</td></tr>";
                     }
 
                     // Bebaskan hasil query
@@ -351,7 +397,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <span class="close" onclick="closeModal('updateModal')">&times;</span>
                     <h2>Update Data Konten</h2>
                     <form id="updateForm" method="post" class="update-form">
-                        <input type="hidden" name="id" id="updateUserId">
+                        <input type="hidden" name="id" id="updateId">
+                        <div class="form-group">
+                            <label for="updateUserId">User ID:</label>
+                            <input type="text" name="user_id" id="updateUserId" required>
+                        </div>
                         <div class="form-group">
                             <label for="updateContent">Content:</label>
                             <input type="text" name="content" id="updateContent" required>
@@ -386,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <!-- Form untuk Hapus -->
             <form id="deleteForm" method="post" style="display:none;">
-                <input type="hidden" name="id" id="deleteUserId">
+                <input type="hidden" name="id" id="deleteId">
                 <input type="hidden" name="delete" value="true">
             </form>
         </main>
@@ -396,4 +446,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </footer>
 </body>
 </html>
-
