@@ -220,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
-                <li><a href="../?mod=home">Logout</a></li>
+                <li><a href="../page.php?mod=login">Logout</a></li>
             </ul>
         </aside>
         <main class="main-content">

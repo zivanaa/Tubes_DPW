@@ -1,26 +1,30 @@
 <?php
 session_start();
-// Pastikan ada sesi username, jika tidak, redirect ke halaman login
+// Ensure user is logged in
 if (!isset($_SESSION['username'])) {
     header('Location: template/login.php');
     exit();
 }
 
-// Ambil username dari sesi
-$username = $_SESSION['username'];
+$currentUsername = $_SESSION['username'];
 
-// Koneksi ke database
+// Database connection
 $koneksi = new mysqli("localhost", "root", "", "db_itsave");
 
-// Periksa koneksi
+// Check connection
 if ($koneksi->connect_error) {
     die("Koneksi database gagal: " . $koneksi->connect_error);
 }
 
-// Ambil data user dari database berdasarkan username
-$sql = "SELECT name, username FROM users WHERE username = ?";
+// Fetch user data
+$sql = "SELECT name, username, bio, dashboard, profile_image FROM users WHERE username = ?";
 $stmt = $koneksi->prepare($sql);
-$stmt->bind_param("s", $username);
+
+if ($stmt === false) {
+    die("Error preparing statement: " . $koneksi->error);
+}
+
+$stmt->bind_param("s", $currentUsername);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -30,7 +34,63 @@ if ($result->num_rows == 1) {
     die("User tidak ditemukan.");
 }
 
-// Tutup statement dan koneksi
+// Update profile data
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['profileName'];
+    $bio = $_POST['profileBio'];
+    $dashboard = $_POST['profileDashboard'];
+    $newUsername = $_POST['profileUsername'];
+
+    // Check if new username is already taken
+    $checkUsernameSql = "SELECT username FROM users WHERE username = ? AND username != ?";
+    $checkUsernameStmt = $koneksi->prepare($checkUsernameSql);
+    $checkUsernameStmt->bind_param("ss", $newUsername, $currentUsername);
+    $checkUsernameStmt->execute();
+    $checkUsernameResult = $checkUsernameStmt->get_result();
+
+    if ($checkUsernameResult->num_rows > 0) {
+        die("Username sudah digunakan.");
+    }
+
+    // Handle profile image upload
+    if (!empty($_FILES['profileImageUpload']['name'])) {
+        $uploadsDirectory = __DIR__ . '/../assets/profile/';
+        $profileImage = $uploadsDirectory . basename($_FILES['profileImageUpload']['name']);
+        $relativeImagePath = 'assets/profile/' . basename($_FILES['profileImageUpload']['name']);
+
+        if (move_uploaded_file($_FILES['profileImageUpload']['tmp_name'], $profileImage)) {
+            // File berhasil diunggah, lanjutkan dengan proses penyimpanan ke database
+        } else {
+            die("Gagal mengunggah file.");
+        }
+    } else {
+        $relativeImagePath = $user['profile_image']; // Jika tidak ada file baru diunggah, gunakan gambar yang sudah ada
+    }
+
+    $updateSql = "UPDATE users SET name = ?, bio = ?, dashboard = ?, profile_image = ?, username = ? WHERE username = ?";
+    $updateStmt = $koneksi->prepare($updateSql);
+
+    if ($updateStmt === false) {
+        die("Error preparing update statement: " . $koneksi->error);
+    }
+
+    $updateStmt->bind_param("ssssss", $name, $bio, $dashboard, $relativeImagePath, $newUsername, $currentUsername);
+
+    if ($updateStmt->execute()) {
+        // Update session data
+        $_SESSION['username'] = $newUsername;
+        $user['name'] = $name;
+        $user['bio'] = $bio;
+        $user['dashboard'] = $dashboard;
+        $user['profile_image'] = $relativeImagePath;
+        $user['username'] = $newUsername;
+    } else {
+        echo "Error updating profile: " . $koneksi->error;
+    }
+
+    $updateStmt->close();
+}
+
 $stmt->close();
 $koneksi->close();
 ?>
@@ -44,6 +104,7 @@ $koneksi->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Card</title>
     <style>
+        /* Gaya CSS Anda di sini */
         body {
             font-family: Arial, sans-serif;
             background-color: #fff;
@@ -169,16 +230,6 @@ $koneksi->close();
             margin: 5px 0;
         }
 
-        .profile-links {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .profile-links a {
-            color: #1da1f2;
-            text-decoration: none;
-        }
-
         .profile-buttons {
             display: flex;
             color: #1193D3;
@@ -205,6 +256,9 @@ $koneksi->close();
             padding: 15px;
             margin-top: 20px;
             text-align: left;
+            color:#000;
+            word-wrap: break-word; /* Ensures long words break to the next line */
+            overflow-wrap: break-word; /* Ensures long words break to the next line */
         }
 
         .clicked {
@@ -244,7 +298,7 @@ $koneksi->close();
     <div class="content">
         <div class="profile-card">
             <div class="profile-header">
-                <img id="profileImage" src="https://via.placeholder.com/80" alt="Profile Image">
+                <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
                 <div>
                     <h4><?php echo htmlspecialchars($user['name']); ?></h4>
                     <h2><?php echo htmlspecialchars($user['username']); ?></h2>
@@ -252,67 +306,68 @@ $koneksi->close();
             </div>
             <div class="profile-stats">
                 <div>
-                    <span>45</span>
+                    <span>150</span>
                     Posts
                 </div>
                 <div>
-                    <span>668</span>
+                    <span>300</span>
                     Followers
                 </div>
                 <div>
-                    <span>408</span>
+                    <span>200</span>
                     Following
                 </div>
             </div>
             <div class="profile-bio">
-                <p>bio</p>
-                <a href="#">See Translation</a>
-            </div>
-            <div class="dashboard">
-                <p style="color: #0C0C0C">Professional dashboard</p>
-                <div class="profile-links">
-                    <a href="#">instagram.com/o8.25am?igshid=MzRlODBiN...</a>
-                </div>
+                <p><?php echo htmlspecialchars($user['bio']); ?></p>
+                <a href="#">Terjemahkan</a>
             </div>
             <div class="profile-buttons">
-                <button id="editProfileBtn">Edit profile</button>
-                <button>Share profile</button>
+                <button id="editProfileBtn">Edit Profile</button>
+                <button>Share Profile</button>
+            </div>
+            <div class="dashboard">
+                <h4>Profesional dashboard:</h4>
+                <p><?php echo nl2br(htmlspecialchars($user['dashboard'])); ?></p>
             </div>
         </div>
     </div>
 
-    <!-- Modal for Edit Profile -->
+    <!-- Modal for editing profile -->
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Edit Profile</h2>
-            <form id="editProfileForm">
-                <div class="form-group">
-                    <label for="profileImageUpload">Profile Image</label>
-                    <img id="profileImagePreview" src="https://via.placeholder.com/80" alt="Profile Image Preview">
+            <form action="" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                    <label for="profileImageUpload">Profile Image:</label>
+                    <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
                     <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
-
+            </div>
+                <div class="form-group">
+                    <label for="profileName">Name:</label>
+                    <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
                 </div>
                 <div class="form-group">
-                    <label for="profileName">Name</label>
-                    <input type="text" id="profileName" name="profileName">
+                    <label for="profileUsername">Username:</label>
+                    <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
                 </div>
                 <div class="form-group">
-                    <label for="profileUsername">Username</label>
-                    <input type="text" id="profileUsername" name="profileUsername">
+                    <label for="profileBio">Bio:</label>
+                    <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
                 </div>
                 <div class="form-group">
-                    <label for="profileBio">Bio</label>
-                    <input type="text" id="profileBio" name="profileBio">
+                    <label for="profileDashboard">Dashboard:</label>
+                    <input type="text" id="profileDashboard" name="profileDashboard" value="<?php echo htmlspecialchars($user['dashboard']); ?>">
                 </div>
-                <div class="form-group">
-                    <button type="submit">Save Changes</button>
-                </div>
+                
+                <button type="submit">Save Changes</button>
             </form>
         </div>
     </div>
 
     <script>
+        // JavaScript untuk modal
         var modal = document.getElementById("editProfileModal");
         var btn = document.getElementById("editProfileBtn");
         var span = document.getElementsByClassName("close")[0];
@@ -331,33 +386,30 @@ $koneksi->close();
             }
         }
 
-        document.getElementById('profileImageUpload').onchange = function(event) {
+        // Preview image
+        document.getElementById('profileImageUpload').addEventListener('change', function(e) {
+            var previewImage = document.getElementById('previewImage');
+            var file = e.target.files[0];
             var reader = new FileReader();
-            reader.onload = function() {
-                var preview = document.getElementById('profileImagePreview');
-                preview.src = reader.result;
+
+            reader.onloadend = function() {
+                previewImage.src = reader.result;
             }
-            reader.readAsDataURL(event.target.files[0]);
-        }
 
-        document.getElementById('editProfileForm').onsubmit = function(event) {
-            event.preventDefault();
-
-            var profileImage = document.getElementById('profileImagePreview').src;
-            var profileName = document.getElementById('profileName').value;
-            var profileUsername = document.getElementById('profileUsername').value;
-            var profileBio = document.getElementById('profileBio').value;
-
-            document.getElementById('profileImage').src = profileImage;
-            document.querySelector('.profile-header h4').innerText = profileName;
-            document.querySelector('.profile-header h2').innerText = '@' + profileUsername;
-            document.querySelector('.profile-bio p').innerText = profileBio;
-
-            modal.style.display = "none";
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = "<?php echo htmlspecialchars($user['profile_image']); ?>";
+            }
+        });
+        function validateUsername() {
+            const usernameInput = document.getElementById("profileUsername");
+            if (!usernameInput.value.includes('@')) {
+                usernameInput.value = '@';
+            }
         }
     </script>
-
-    <div class="container-fluid" style="margin-top: 40px; display: flex; justify-content: center;">
+        <div class="container-fluid" style="margin-top: 40px; display: flex; justify-content: center;">
         <div class="row" style="width: 100%; max-width: 4000px;">
             <div class="col-md-6 feed" style="margin: 0 auto;">
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white;">
@@ -401,24 +453,10 @@ $koneksi->close();
             </div>
         </div>
     </div>
-
     <br>
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
+
 
 </body>
 
 </html>
-
 <?php include "footer.php"; ?>
