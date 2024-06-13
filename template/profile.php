@@ -230,6 +230,16 @@ $koneksi->close();
             margin: 5px 0;
         }
 
+        .profile-username {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .profile-username p {
+            margin: 5px 0;
+            
+        }
+
         .profile-buttons {
             display: flex;
             color: #1193D3;
@@ -297,14 +307,12 @@ $koneksi->close();
 
     <div class="content">
         <div class="profile-card">
+            <div class="profile-username">
+            <h5><?php echo htmlspecialchars($user['username']); ?></h5>
+            </div>
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
-                <div>
-                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                    <h2><?php echo htmlspecialchars($user['username']); ?></h2>
-                </div>
-            </div>
-            <div class="profile-stats">
+                <div class="profile-stats">
                 <div>
                     <span>150</span>
                     Posts
@@ -317,10 +325,18 @@ $koneksi->close();
                     <span>200</span>
                     Following
                 </div>
+                 </div>
+                 
             </div>
+           
             <div class="profile-bio">
+                <div>   
+                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                    
+                </div>
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
                 <a href="#">Terjemahkan</a>
+                
             </div>
             <div class="profile-buttons">
                 <button id="editProfileBtn">Edit Profile</button>
@@ -414,7 +430,7 @@ $koneksi->close();
             <div class="col-md-6 feed" style="margin: 0 auto;">
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white;">
                     <div class="d-flex align-items-center">
-                        <a href="?mod=user" class="d-flex align-items-center text-decoration-none">
+                        <a href="?mod=profile" class="d-flex align-items-center text-decoration-none">
                             <img src="https://via.placeholder.com/50" class="rounded-circle" alt="User Image">
                             <div class="ms-3">
                                 <h5 class="mb-0" style="color: #fff;">User Name</h5>
@@ -422,7 +438,7 @@ $koneksi->close();
                             </div>
                         </a>
                     </div>
-                    <p class="mt-3" style="color: #fff;">This is a sample post content. It can be a tweet, an update, or anything you want to share with your followers.</p>
+                    <p class="mt-3" style="color: #fff;">This is a sample post content. It can be a tweet, an update, or anything you want to share with your follower.</p>
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-ratings-container">
                             <div class="post-rating">
@@ -453,7 +469,21 @@ $koneksi->close();
             </div>
         </div>
     </div>
+    
     <br>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link">Previous</a>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
 
 
 </body>
