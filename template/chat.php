@@ -1,6 +1,4 @@
-<?php include"header.php"; ?>
-<?php include"config/koneksi.php"; ?>
-
+<?php include"header.php";?>
 <style>
         body {
             font-family: 'Roboto', sans-serif;

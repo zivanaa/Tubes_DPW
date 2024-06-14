@@ -1,4 +1,14 @@
 <?php
+session_start();
+
+// Periksa apakah pengguna sudah login
+if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
+
+$user_name = $_SESSION['username'];
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $name = $_POST['name'];
@@ -104,20 +114,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     .header {
-        background-color: #11174F;
-        color: white;
-        padding: 15px;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-    }
+            background-color: #11174F;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
 
-    .header img {
-        height: 40px; /* Sesuaikan tinggi logo dengan tinggi teks */
-        width: auto; /* Pertahankan rasio aspek logo */
-    }
+        .header img {
+            height: 80px;
+            width: auto;
+        }
 
     .container {
         display: flex;
@@ -213,6 +223,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header class="header">
         <img src="../assets/img/images.png" alt="Logo">
         <h1>Admin Panel</h1>
+        <div>
+            <p>Yellow babe, <br> <?php echo $user_name; ?></p>
+        </div>
     </header>
     <div class="container">
         <aside class="sidebar">
@@ -220,7 +233,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
-                <li><a href="../page.php?mod=login">Logout</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </aside>
         <main class="main-content">

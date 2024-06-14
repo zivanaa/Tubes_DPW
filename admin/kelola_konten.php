@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Periksa apakah pengguna sudah login
+if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
+
 // Koneksi ke database
 $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
 
@@ -7,6 +15,9 @@ if (mysqli_connect_errno()) {
     echo "Koneksi database gagal: " . mysqli_connect_error();
     exit();
 }
+
+// Ambil nama user dari session
+$user_name = $_SESSION['username'];
 
 // Periksa apakah form update atau hapus telah disubmit
 $message = "";
@@ -72,12 +83,12 @@ if (isset($_GET['search'])) {
             text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 15px;
         }
 
         .header img {
-            height: 40px;
+            height: 80px;
             width: auto;
         }
 
@@ -201,13 +212,16 @@ if (isset($_GET['search'])) {
         }
 
         .form-group {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
             margin-bottom: 15px;
         }
 
         .form-group label {
-            display: block;
+            align-self: center;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #fff;
         }
 
         .form-group input[type="text"] {
@@ -224,6 +238,7 @@ if (isset($_GET['search'])) {
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-right: 10px;
         }
 
         .btn-update:hover {
@@ -248,11 +263,12 @@ if (isset($_GET['search'])) {
             float: right;
             font-size: 28px;
             font-weight: bold;
+            cursor: pointer;
         }
 
         .close:hover,
         .close:focus {
-            color: #000;
+            color: #fff;
             text-decoration: none;
             cursor: pointer;
         }
@@ -277,7 +293,7 @@ if (isset($_GET['search'])) {
             border: none;
             background-color: #11174F;
             color: white;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 4px 4px 
             cursor: pointer;
         }
 
@@ -285,35 +301,14 @@ if (isset($_GET['search'])) {
             background-color: #333;
         }
     </style>
-    <script>
-        function openUpdateModal(id, user_id, content, image, likes, dislikes, commentsCount, createdAt) {
-            document.getElementById('updateId').value = id;
-            document.getElementById('updateUserId').value = user_id;
-            document.getElementById('updateContent').value = content;
-            document.getElementById('updateImage').value = image;
-            document.getElementById('updateLikes').value = likes;
-            document.getElementById('updateDislikes').value = dislikes;
-            document.getElementById('updateCommentsCount').value = commentsCount;
-            document.getElementById('updateCreatedAt').value = createdAt;
-            document.getElementById('updateModal').style.display = 'flex';
-        }
-
-        function openDeleteForm(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus konten ini?')) {
-                document.getElementById('deleteId').value = id;
-                document.getElementById('deleteForm').submit();
-            }
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-    </script>
 </head>
 <body>
     <header class="header">
         <img src="../assets/img/images.png" alt="Logo">
         <h1>Admin Panel</h1>
+        <div>
+            <p>Yellow babe, <br> <?php echo $user_name; ?></p>
+        </div>
     </header>
     <div class="container">
         <aside class="sidebar">
@@ -321,7 +316,7 @@ if (isset($_GET['search'])) {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
-                <li><a href="../page.php?mod=login">Logout</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </aside>
         <main class="main-content">
@@ -366,20 +361,20 @@ if (isset($_GET['search'])) {
                         echo "<td>" . $row['id'] . "</td>";
                         echo "<td>" . $row['user_id'] . "</td>";
                         echo "<td>" . $row['content'] . "</td>";
-                        echo "<td>" . $row['image'] . "</td>";
+                        echo "<td><img src='../assets/konten/" . $row['image'] . "' width='200' alt='Image'></td>";
                         echo "<td>" . $row['likes'] . "</td>";
                         echo "<td>" . $row['dislikes'] . "</td>";
                         echo "<td>" . $row['comments_count'] . "</td>";
                         echo "<td>" . $row['created_at'] . "</td>";
                         echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openUpdateModal('".$row['id']."', '".$row['user_id']."', '".$row['content']."', '".$row['image']."', '".$row['likes']."', '".$row['dislikes']."', '".$row['comments_count']."', '".$row['created_at']."')\">Update</button>";
-                        echo "<button onclick=\"openDeleteForm('".$row['id']."')\">Hapus</button>";
+                        echo "<button onclick=\"openUpdateModal('" . $row['id'] . "', '" . $row['user_id'] . "', '" . $row['content'] . "', '" . $row['image'] . "', '" . $row['likes'] . "', '" . $row['dislikes'] . "', '" . $row['comments_count'] . "', '" . $row['created_at'] . "')\">Update</button>";
+                        echo "<button onclick=\"openDeleteForm('" . $row['id'] . "')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
                     }
-
+                    
                     if (mysqli_num_rows($result) == 0) {
-                        echo "<tr><td colspan='9' style='text-align:center;'>Data tidak terdaftar</td></tr>";
+                        echo "<tr><td colspan='9' style='text-align:center;'>Data tidak terdaftar</td>";
                     }
 
                     // Bebaskan hasil query
@@ -446,3 +441,4 @@ if (isset($_GET['search'])) {
     </footer>
 </body>
 </html>
+

@@ -1,6 +1,15 @@
 <?php
+session_start();
+
+// Periksa apakah pengguna sudah login
+if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
 // Koneksi ke database
 $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
+
+$user_name = $_SESSION['username'];
 
 // Periksa koneksi
 if (mysqli_connect_errno()) {
@@ -75,12 +84,12 @@ if (isset($_GET['search'])) {
             text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 15px;
         }
 
         .header img {
-            height: 40px;
+            height: 80px;
             width: auto;
         }
 
@@ -322,6 +331,9 @@ if (isset($_GET['search'])) {
     <header class="header">
         <img src="../assets/img/images.png" alt="Logo">
         <h1>Admin Panel</h1>
+        <div>
+            <p>Yellow babe, <br> <?php echo $user_name; ?></p>
+        </div>
     </header>
     <div class="container">
         <aside class="sidebar">
@@ -329,7 +341,7 @@ if (isset($_GET['search'])) {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
-                <li><a href="../page.php?mod=login">Logout</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </aside>
         <main class="main-content">
