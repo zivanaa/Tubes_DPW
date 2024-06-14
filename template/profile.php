@@ -307,12 +307,17 @@ $koneksi->close();
 
     <div class="content">
         <div class="profile-card">
-            <div class="profile-username">
-            <h5><?php echo htmlspecialchars($user['username']); ?></h5>
-            </div>
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
-                <div class="profile-stats">
+                <div class="profile-username">
+                    <h5><?php echo htmlspecialchars($user['username']); ?></h5>
+                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                </div>
+               
+            </div>
+           
+            <div class="profile-bio">
+            <div class="profile-stats">
                 <div>
                     <span>150</span>
                     Posts
@@ -325,23 +330,16 @@ $koneksi->close();
                     <span>200</span>
                     Following
                 </div>
-                 </div>
-                 
-            </div>
-           
-            <div class="profile-bio">
-                <div>   
-                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                    
                 </div>
+                
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
-                <a href="#">Terjemahkan</a>
+                <div class="profile-buttons">
+                    <button id="editProfileBtn">Edit Profile</button>
+                    <button>Share Profile</button>
+                </div>  
                 
             </div>
-            <div class="profile-buttons">
-                <button id="editProfileBtn">Edit Profile</button>
-                <button>Share Profile</button>
-            </div>
+
             <div class="dashboard">
                 <h4>Profesional dashboard:</h4>
                 <p><?php echo nl2br(htmlspecialchars($user['dashboard'])); ?></p>
