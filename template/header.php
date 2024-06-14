@@ -1,3 +1,58 @@
+<?php
+// Koneksi ke database
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$database = 'db_itsave';
+
+$koneksi = mysqli_connect($host, $username, $password, $database);
+
+// Periksa koneksi
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
+}
+
+// Periksa apakah pengguna sudah login
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ?mod=login');
+    exit();
+}
+
+// Mendapatkan informasi pengguna dari database
+$user_id = $_SESSION['user_id'];
+
+$query = "SELECT * FROM users WHERE id = $user_id";
+$result = mysqli_query($koneksi, $query);
+
+if (!$result) {
+    die("Query gagal: " . mysqli_error($koneksi));
+}
+
+$row = mysqli_fetch_assoc($result);
+
+// Ambil informasi profil pengguna
+$user_name = $row['username'];
+$user_profile_image = $row['profile_image']; // Kolom di tabel yang menyimpan path gambar profil
+
+// Fungsi untuk mendapatkan gambar profil dari database atau penyimpanan lainnya
+function getUserProfileImage($user_id, $koneksi) {
+    $query = "SELECT profile_image FROM users WHERE id = $user_id";
+    $result = mysqli_query($koneksi, $query);
+
+    if (!$result) {
+        return "default_profile_image.jpg"; // Default jika tidak ada gambar profil
+    }
+
+    $row = mysqli_fetch_assoc($result);
+    return $row['profile_image'];
+}
+
+// Mendapatkan gambar profil pengguna dari fungsi
+$user_profile_image = getUserProfileImage($user_id, $koneksi);
+
+// Tutup koneksi database
+mysqli_close($koneksi);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -405,22 +460,28 @@
   }
 </style>
 
+
 <body>
+
   <!--header start-->
-  <div  style="background-color: #11174F;">
-    <div class="container-fluid px-5" >
-        <div class="row align-items-center">
-            <div class="col">
-                <img src="assets/img/images.png" style="height: 90px; " >
-                <span style="font-size: 28px; font-weight: bold; color : #fff">IT SAFE</span>
-            </div>
-            <div class="col text-right">
-                <div class="d-flex flex-column align-items-end">
-                <a href="?mod=profile">
-                    <!-- Logo profil -->
-                    <img src="assets/img/images.png" style="height: 40px; border-radius: 50%;"></a>
-                    <!-- Keterangan "Profile" -->
-                    <span style="font-size: 14px; color : #fff">Profile</span>
+  <div style="background-color: #11174F;">
+        <div class="container-fluid px-5">
+            <div class="row align-items-center">
+                <div class="col">
+                    <a href="?mod=home"> <!-- Tambahkan link ke halaman home di sini -->
+                        <img src="assets/img/images.png" style="height: 90px;">
+                        <span style="font-size: 28px; font-weight: bold; color: #fff;">IT SAFE</span>
+                    </a>
+                </div>
+                <div class="col text-right">
+                    <div class="d-flex flex-column align-items-end">
+                        <a href="?mod=profile">
+                            <!-- Logo profil -->
+                            <img src="<?php echo $user_profile_image; ?>" style="height: 40px; width: 40px; border-radius: 50%;">
+                        </a>
+                        <!-- Keterangan "Profile" -->
+                        <span style="font-size: 14px; color: #fff;">Profile</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -435,6 +496,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarScroll">
           <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+            
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home">Halaman Utama</a>
             </li>
@@ -463,6 +525,5 @@
           </form>
         </div>
       </div>
-  </nav>
-  
-  </div>
+  </nav>  
+</div>

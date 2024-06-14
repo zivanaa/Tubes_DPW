@@ -190,6 +190,7 @@ $koneksi->close();
 
         .profile-header img {
             border-radius: 50%;
+            position: center;
             width: 80px;
             height: 80px;
         }
@@ -231,7 +232,14 @@ $koneksi->close();
         }
 
         .profile-username {
-            text-align: center;
+            background-color: #BBD4E0;
+            border-radius: 5px;
+            padding: 5px;
+            margin-top: 20px;
+            text-align: left;
+            background-color: #BBD4E0;
+            font-style: bold;
+            color: #11174F;
             margin: 20px 0;
         }
 
@@ -308,7 +316,7 @@ $koneksi->close();
     <div class="content">
         <div class="profile-card">
             <div class="profile-username">
-            <h5><?php echo htmlspecialchars($user['username']); ?></h5>
+            <h3><?php echo htmlspecialchars($user['username']); ?></h3>
             </div>
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
@@ -331,9 +339,9 @@ $koneksi->close();
            
             <div class="profile-bio">
                 <div>   
-                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                    
+                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>                   
                 </div>
+                
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
                 <a href="#">Terjemahkan</a>
                 
