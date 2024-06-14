@@ -293,7 +293,7 @@ if (isset($_GET['search'])) {
             border: none;
             background-color: #11174F;
             color: white;
-            border-radius: 0 4px 4px 
+            border-radius: 0 4px 4px 0;
             cursor: pointer;
         }
 
@@ -439,6 +439,31 @@ if (isset($_GET['search'])) {
     <footer class="footer">
         <p>&copy; 2024 Admin Panel</p>
     </footer>
+
+    <script>
+        // Fungsi untuk membuka modal update
+        function openUpdateModal(id, userId, content, image, likes, dislikes, commentsCount, createdAt) {
+            document.getElementById('updateId').value = id;
+            document.getElementById('updateUserId').value = userId;
+            document.getElementById('updateContent').value = content;
+            document.getElementById('updateImage').value = image;
+            document.getElementById('updateLikes').value = likes;
+            document.getElementById('updateDislikes').value = dislikes;
+            document.getElementById('updateCommentsCount').value = commentsCount;
+            document.getElementById('updateCreatedAt').value = createdAt;
+            document.getElementById('updateModal').style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Fungsi untuk membuka form hapus
+        function openDeleteForm(id) {
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deleteForm').submit();
+        }
+    </script>
 </body>
 </html>
-
