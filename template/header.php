@@ -477,7 +477,7 @@ mysqli_close($koneksi);
                     <div class="d-flex flex-column align-items-end">
                         <a href="?mod=profile">
                             <!-- Logo profil -->
-                            <img src="<?php echo $user_profile_image; ?>" style="height: 40px; width: 40px; border-radius: 50%;">
+                            <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="height: 40px; width: 40px; border-radius: 50%;">
                         </a>
                         <!-- Keterangan "Profile" -->
                         <span style="font-size: 14px; color: #fff;">Profile</span>
@@ -501,6 +501,12 @@ mysqli_close($koneksi);
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home">Halaman Utama</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=trending">Trending</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home">Following</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=chat">Chat</a>
             </li>
             <li class="nav-item">
@@ -508,13 +514,19 @@ mysqli_close($koneksi);
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" style="color : #fff" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Untuk Anda
+                Pengguna
               </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" style="color : #11174F" href="#">Terbaru</a></li>
-                <li><a class="dropdown-item" style="color : #11174F" href="#">Teratas</a></li>
-                <li><a class="dropdown-item" style="color : #11174F" href="#">Untuk Anda</a></li>
-                <li><hr class="dropdown-divider"></li>
+              <ul class="dropdown-menu">  
+                <li class="nav-item">
+                    <a class="nav-link" href="?mod=all_user">Semua Pengguna</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="?mod=trending">User</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="?mod=trending">Advokad</a>
+                </li>
+                <
                 <li><a class="dropdown-item" style="color : #11174F" href="#">Something else here</a></li>
               </ul>
             </li>

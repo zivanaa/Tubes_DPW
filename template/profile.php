@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Handle profile image upload
     if (!empty($_FILES['profileImageUpload']['name'])) {
-        $uploadsDirectory = __DIR__ . '/../assets/profile/';
+        $uploadsDirectory = _DIR_ . '/../assets/profile/';
         $profileImage = $uploadsDirectory . basename($_FILES['profileImageUpload']['name']);
         $relativeImagePath = 'assets/profile/' . basename($_FILES['profileImageUpload']['name']);
 
@@ -232,14 +232,11 @@ $koneksi->close();
         }
 
         .profile-username {
-            background-color: #BBD4E0;
             border-radius: 5px;
             padding: 5px;
             margin-top: 20px;
             text-align: left;
-            background-color: #BBD4E0;
             font-style: bold;
-            color: #11174F;
             margin: 20px 0;
         }
 
@@ -315,17 +312,11 @@ $koneksi->close();
 
     <div class="content">
         <div class="profile-card">
-<<<<<<< HEAD
-=======
-            <div class="profile-username">
-            <h3><?php echo htmlspecialchars($user['username']); ?></h3>
-            </div>
->>>>>>> ed4fce118d28bcff0d97ed68b49bff0cd7a2744f
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
                 <div class="profile-username">
-                    <h5><?php echo htmlspecialchars($user['username']); ?></h5>
                     <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                    <h5><?php echo htmlspecialchars($user['username']); ?></h5>
                 </div>
                
             </div>
@@ -344,16 +335,6 @@ $koneksi->close();
                     <span>200</span>
                     Following
                 </div>
-<<<<<<< HEAD
-=======
-                 </div>
-                 
-            </div>
-           
-            <div class="profile-bio">
-                <div>   
-                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>                   
->>>>>>> ed4fce118d28bcff0d97ed68b49bff0cd7a2744f
                 </div>
                 
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
@@ -511,4 +492,4 @@ $koneksi->close();
 </body>
 
 </html>
-<?php include "footer.php"; ?>
+<?php include "footer.php"; ?>

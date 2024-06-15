@@ -1,8 +1,9 @@
 <?php
 session_start();
 
+
 // Periksa apakah pengguna sudah login
-if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit();
 }
@@ -26,13 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = $_POST['id'];
         $content = $_POST['content'];
         $image = $_POST['image'];
-        $likes = $_POST['likes'];
-        $dislikes = $_POST['dislikes'];
-        $comments_count = $_POST['comments_count'];
+        
         $created_at = $_POST['created_at'];
 
         // Update data konten
-        $query = "UPDATE posts SET content='$content', image='$image', `likes`='$likes', dislikes='$dislikes', comments_count='$comments_count', created_at='$created_at' WHERE id='$id'";
+        $query = "UPDATE posts SET content='$content', image='$image', created_at='$created_at' WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil diperbarui!";
         } else {
@@ -50,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+
 
 // Periksa apakah ada pencarian
 $search = "";
@@ -300,6 +300,45 @@ if (isset($_GET['search'])) {
         .search-bar button:hover {
             background-color: #333;
         }
+
+        /* CSS untuk modal gambar */
+        #imageModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 450px;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #imageModal img {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        #imageModal .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        #imageModal .close:hover,
+        #imageModal .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -337,9 +376,6 @@ if (isset($_GET['search'])) {
                         <th>User ID</th>
                         <th>Content</th>
                         <th>Image</th>
-                        <th>Like</th>
-                        <th>Dislike</th>
-                        <th>Comments Count</th>
                         <th>Created At</th>
                         <th>Aksi</th>
                     </tr>
@@ -347,7 +383,7 @@ if (isset($_GET['search'])) {
                 <tbody>
                     <?php
                     // Query untuk mendapatkan data konten
-                    $query = "SELECT id, user_id, content, image, `likes`, dislikes, comments_count, created_at FROM posts";
+                    $query = "SELECT id, user_id, content, image, created_at FROM posts";
 
                     if (!empty($search)) {
                         $query .= " WHERE content LIKE '%$search%' OR user_id LIKE '%$search%'";
@@ -361,13 +397,18 @@ if (isset($_GET['search'])) {
                         echo "<td>" . $row['id'] . "</td>";
                         echo "<td>" . $row['user_id'] . "</td>";
                         echo "<td>" . $row['content'] . "</td>";
-                        echo "<td><img src='../assets/konten/" . $row['image'] . "' width='200' alt='Image'></td>";
-                        echo "<td>" . $row['likes'] . "</td>";
-                        echo "<td>" . $row['dislikes'] . "</td>";
-                        echo "<td>" . $row['comments_count'] . "</td>";
+                        echo "<td>";
+
+                        // Pisahkan gambar dengan koma
+                        $images = explode(',', $row['image']);
+                        foreach ($images as $image) {
+                            echo "<img src='../assets/konten/" . trim($image) . "' width='50' alt='Image' style='margin: 5px;' onclick=\"openImageModal('../assets/konten/" . trim($image) . "')\">";
+                        }
+
+                        echo "</td>";
                         echo "<td>" . $row['created_at'] . "</td>";
                         echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openUpdateModal('" . $row['id'] . "', '" . $row['user_id'] . "', '" . $row['content'] . "', '" . $row['image'] . "', '" . $row['likes'] . "', '" . $row['dislikes'] . "', '" . $row['comments_count'] . "', '" . $row['created_at'] . "')\">Update</button>";
+                        echo "<button onclick=\"openUpdateModal('" . $row['id'] . "', '" . $row['user_id'] . "', '" . addslashes($row['content']) . "', '" . addslashes($row['image']) . "', '" . $row['created_at'] . "')\">Update</button>";
                         echo "<button onclick=\"openDeleteForm('" . $row['id'] . "')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
@@ -434,6 +475,12 @@ if (isset($_GET['search'])) {
                 <input type="hidden" name="id" id="deleteId">
                 <input type="hidden" name="delete" value="true">
             </form>
+
+            <!-- Modal untuk Gambar -->
+            <div id="imageModal" class="modal">
+                <span class="close" onclick="closeImageModal()">&times;</span>
+                <img class="modal-content" id="modalImage">
+            </div>
         </main>
     </div>
     <footer class="footer">
@@ -463,6 +510,17 @@ if (isset($_GET['search'])) {
         function openDeleteForm(id) {
             document.getElementById('deleteId').value = id;
             document.getElementById('deleteForm').submit();
+        }
+
+        // Fungsi untuk membuka modal gambar
+        function openImageModal(imageSrc) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup modal gambar
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
         }
     </script>
 </body>

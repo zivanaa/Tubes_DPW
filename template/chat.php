@@ -1,3 +1,11 @@
+<?php
+session_start(); // Memulai session jika belum dimulai
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ?mod=login'); // Redirect ke halaman login jika belum login
+    exit();
+}
+// Koneksi ke database dan kode lainnya untuk halaman chat
+?>
 <?php include"header.php";?>
 <style>
         body {

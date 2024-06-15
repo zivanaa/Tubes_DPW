@@ -1,8 +1,6 @@
 <?php
-// Start session
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -18,6 +16,7 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -30,52 +29,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 
     if ($action == 'like' || $action == 'dislike') {
         if ($existing_action) {
-            // User has already performed an action
             if ($existing_action['action_type'] == $action) {
-                // If user clicks the same action again, remove it (unlike or undislike)
+                // Remove like or dislike
                 $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_action['id'];
                 mysqli_query($koneksi, $delete_query);
+                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes - 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes - 1 WHERE id = $post_id";
+                mysqli_query($koneksi, $update_query);
             } else {
-                // If user switches from like to dislike or vice versa, update action type
+                // Switch from like to dislike or vice versa
                 $update_action_query = "UPDATE post_actions SET action_type = '$action' WHERE id = " . $existing_action['id'];
                 mysqli_query($koneksi, $update_action_query);
+                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1, dislikes = dislikes - 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes + 1, likes = likes - 1 WHERE id = $post_id";
+                mysqli_query($koneksi, $update_query);
             }
         } else {
-            // User performs a new like or dislike action
+            // Add new like or dislike
             $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, '$action')";
             mysqli_query($koneksi, $insert_query);
+            $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes + 1 WHERE id = $post_id";
+            mysqli_query($koneksi, $update_query);
         }
     } elseif ($action == 'repost') {
         if ($existing_action && $existing_action['action_type'] == 'repost') {
-            // User has already reposted, remove repost action (unrepost)
-            $delete_query = "DELETE FROM post_actions WHERE post_id = $post_id AND user_id = $user_id AND action_type = 'repost'";
+            // Remove repost
+            $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_action['id'];
             mysqli_query($koneksi, $delete_query);
+            $delete_post_query = "DELETE FROM posts WHERE original_post_id = $post_id AND user_id = $user_id";
+            mysqli_query($koneksi, $delete_post_query);
         } else {
-            // User reposts the post
+            // Add new repost
             $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, 'repost')";
             mysqli_query($koneksi, $insert_query);
+            $repost_query = "INSERT INTO posts (user_id, content, image, likes, dislikes, comments_count, created_at, original_post_id) 
+                             SELECT $user_id, content, image, 0, 0, 0, NOW(), id FROM posts WHERE id = $post_id";
+            mysqli_query($koneksi, $repost_query);
         }
     }
 }
 
-
-
-
-// Fetch posts from the database
+// Fetch posts with most likes in the last 24 hours
 $query = "SELECT p.*, u.name, u.profile_image, u.username,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
-                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like' AND created_at >= NOW() - INTERVAL 1 DAY) AS likes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike' AND created_at >= NOW() - INTERVAL 1 DAY) AS dislikes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost' AND created_at >= NOW() - INTERVAL 1 DAY) AS reposts
           FROM posts p 
           JOIN users u ON p.user_id = u.id 
-          ORDER BY p.created_at DESC";
+          WHERE p.created_at >= NOW() - INTERVAL 1 DAY
+          ORDER BY likes DESC";
 $result = mysqli_query($koneksi, $query);
-
-if (!$result) {
-    echo "Error: " . mysqli_error($koneksi);
-    exit();
-}
 ?>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -85,6 +86,8 @@ if (!$result) {
     <div class="row" style="width: 100%; max-width: 2500px;">
         <div class="col-md-6 feed" style="margin: 0 auto;">
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <a href="detail_post.php?post_id=<?= $row['id'] ?>" class="btn btn-link" style="color: white; text-decoration: none;">Read more...</a>
+
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
                     <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
                         <div class="d-flex">
@@ -99,25 +102,25 @@ if (!$result) {
                     <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
                     <div class="horizontal-scroll">
                         <?php foreach (explode(",", $row['image']) as $image): ?>
-                            <!-- Tambahkan link untuk membuka modal -->
-                            <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
-                                <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
-                            </a>
+                        <!-- Tambahkan link untuk membuka modal -->
+                        <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
+                            <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
+                        </a>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
-                                            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
-                                        </div>
+                        <!-- Modal -->
+                        <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
+                                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                     <div class="d-flex justify-content-between" style="color: white;">

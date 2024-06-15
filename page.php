@@ -34,5 +34,23 @@ if ($_GET['mod']=='home'){
 
 } else if ($_GET['mod']=='admin'){
     include"admin/pengguna.php";
+
+} else if ($_GET['mod']=='detail_post'){
+    include "template/detail_post.php";
+
+} else if ($_GET['mod']=='show_profile'){
+    include "template/show_profile.php";
+
+} else if ($_GET['mod']=='comment'){
+    include "template/comment.php";
+
+} else if ($_GET['mod']=='detail_post'){
+    include "template/detail_post.php";
+
+} else if ($_GET['mod']=='trending'){
+    include "template/trending.php";
+
+} else if ($_GET['mod']=='all_user'){
+    include "template/all_user.php";
 }
 ?>
