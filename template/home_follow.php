@@ -18,6 +18,7 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -65,7 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Fetch posts from the database
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch posts from the database from users that the current user follows
 $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
@@ -73,6 +77,8 @@ $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
           FROM posts p 
           JOIN users u ON p.user_id = u.id 
+          JOIN followers f ON p.user_id = f.user_id
+          WHERE f.follower_id = $user_id
           ORDER BY p.created_at DESC";
 $result = mysqli_query($koneksi, $query);
 
@@ -81,7 +87,6 @@ if (!$result) {
     exit();
 }
 ?>
-
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -93,7 +98,7 @@ if (!$result) {
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
                     <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
                         <div class="d-flex">
-                            <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
+                             <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                             <div class="ms-3">
                                 <strong class="mb-0"><?= htmlspecialchars($row['name']) ?></strong>
                                 <br>
@@ -176,3 +181,4 @@ if (!$result) {
 </style>
 
 <?php include "footer.php"; ?>
+

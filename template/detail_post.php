@@ -16,78 +16,52 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
-    $post_id = (int) $_POST['post_id'];
+    $post_id = $_POST['post_id'];
     $action = $_POST['action'];
-    $user_id = (int) $_SESSION['user_id'];
+    $user_id = $_SESSION['user_id'];
 
     // Check if the user has already performed the action
-    $check_query = "SELECT * FROM post_actions WHERE post_id = ? AND user_id = ?";
-    $stmt = mysqli_prepare($koneksi, $query);
-
-    if (!$stmt) {
-        echo "Error: " . mysqli_error($koneksi);
-        exit();
-    }
-
-    mysqli_stmt_bind_param($stmt, 'ii', $post_id, $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $existing_action = mysqli_fetch_assoc($result);
-
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
-    $post_id = (int) $_POST['post_id'];
-    $action = $_POST['action'];
-    $user_id = (int) $_SESSION['user_id'];
-
-    // Prepare statement untuk mengecek aksi yang sudah dilakukan oleh user
-    $check_query = "SELECT * FROM post_actions WHERE post_id = ? AND user_id = ?";
-    $stmt = mysqli_prepare($koneksi, $check_query);
-    mysqli_stmt_bind_param($stmt, 'ii', $post_id, $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $check_query = "SELECT * FROM post_actions WHERE post_id = $post_id AND user_id = $user_id AND action_type != 'repost'";
+    $result = mysqli_query($koneksi, $check_query);
     $existing_action = mysqli_fetch_assoc($result);
 
     if ($action == 'like' || $action == 'dislike') {
         if ($existing_action) {
-            // Jika user sudah melakukan aksi sebelumnya
+            // User has already performed an action
             if ($existing_action['action_type'] == $action) {
-                // Hapus like atau dislike
-                $delete_query = "DELETE FROM post_actions WHERE id = ?";
-                $stmt = mysqli_prepare($koneksi, $delete_query);
-                mysqli_stmt_bind_param($stmt, 'i', $existing_action['id']);
-                mysqli_stmt_execute($stmt);
-                // Update jumlah likes atau dislikes di tabel posts
-                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes - 1 WHERE id = ?" : "UPDATE posts SET dislikes = dislikes - 1 WHERE id = ?";
-                $stmt = mysqli_prepare($koneksi, $update_query);
-                mysqli_stmt_bind_param($stmt, 'i', $post_id);
-                mysqli_stmt_execute($stmt);
+                // If user clicks the same action again, remove it (unlike or undislike)
+                $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_action['id'];
+                mysqli_query($koneksi, $delete_query);
             } else {
-                // Ganti dari like ke dislike atau sebaliknya
-                $update_action_query = "UPDATE post_actions SET action_type = ? WHERE id = ?";
-                $stmt = mysqli_prepare($koneksi, $update_action_query);
-                mysqli_stmt_bind_param($stmt, 'si', $action, $existing_action['id']);
-                mysqli_stmt_execute($stmt);
-                // Update jumlah likes dan dislikes di tabel posts
-                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1, dislikes = dislikes - 1 WHERE id = ?" : "UPDATE posts SET dislikes = dislikes + 1, likes = likes - 1 WHERE id = ?";
-                $stmt = mysqli_prepare($koneksi, $update_query);
-                mysqli_stmt_bind_param($stmt, 'i', $post_id);
-                mysqli_stmt_execute($stmt);
+                // If user switches from like to dislike or vice versa, update action type
+                $update_action_query = "UPDATE post_actions SET action_type = '$action' WHERE id = " . $existing_action['id'];
+                mysqli_query($koneksi, $update_action_query);
             }
         } else {
-            // Tambahkan like atau dislike baru
-            $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES (?, ?, ?)";
-            $stmt = mysqli_prepare($koneksi, $insert_query);
-            mysqli_stmt_bind_param($stmt, 'iis', $post_id, $user_id, $action);
-            mysqli_stmt_execute($stmt);
-            // Update jumlah likes atau dislikes di tabel posts
-            $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1 WHERE id = ?" : "UPDATE posts SET dislikes = dislikes + 1 WHERE id = ?";
-            $stmt = mysqli_prepare($koneksi, $update_query);
-            mysqli_stmt_bind_param($stmt, 'i', $post_id);
-            mysqli_stmt_execute($stmt);
+            // User performs a new like or dislike action
+            $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, '$action')";
+            mysqli_query($koneksi, $insert_query);
+        }
+    } 
+    // Separate logic for repost
+    elseif ($action == 'repost') {
+        // Check if the user has already reposted
+        $check_repost_query = "SELECT * FROM post_actions WHERE post_id = $post_id AND user_id = $user_id AND action_type = 'repost'";
+        $result_repost = mysqli_query($koneksi, $check_repost_query);
+        $existing_repost = mysqli_fetch_assoc($result_repost);
+
+        if ($existing_repost) {
+            // User has already reposted, remove repost action (unrepost)
+            $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_repost['id'];
+            mysqli_query($koneksi, $delete_query);
+        } else {
+            // User reposts the post
+            $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, 'repost')";
+            mysqli_query($koneksi, $insert_query);
         }
     }
-}
 }
 
 $post_id = isset($_GET['post_id']) ? (int) $_GET['post_id'] : 0;
@@ -101,12 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['comment'])) {
         $stmt = mysqli_prepare($koneksi, $insert_comment_query);
         mysqli_stmt_bind_param($stmt, 'iis', $post_id, $user_id, $comment);
         mysqli_stmt_execute($stmt);
-
-        // Update comments count in posts table
-        $update_post_query = "UPDATE posts SET comments_count = comments_count + 1 WHERE id = ?";
-        $stmt = mysqli_prepare($koneksi, $update_post_query);
-        mysqli_stmt_bind_param($stmt, 'i', $post_id);
-        mysqli_stmt_execute($stmt);
     }
 }
 
@@ -118,9 +86,6 @@ $query = "SELECT p.*, u.name, u.profile_image, u.username,
           FROM posts p 
           JOIN users u ON p.user_id = u.id 
           WHERE p.id = ?";
-
-
-
 $stmt = mysqli_prepare($koneksi, $query);
 mysqli_stmt_bind_param($stmt, 'i', $post_id);
 mysqli_stmt_execute($stmt);
@@ -226,7 +191,7 @@ $comments_result = mysqli_stmt_get_result($stmt);
 
             <form method="post" class="mt-4">
                 <div class="form-group">
-                    <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
+                    <input name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary mt-2">Submit</button>
             </form>

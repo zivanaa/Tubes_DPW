@@ -30,9 +30,12 @@ if ($_GET['mod']=='home'){
     include"template/komen.php";
 
 } else if ($_GET['mod']=='profile'){
-    include"template/profile.php";
+    include"template/profilepalsu.php";
 
-} else if ($_GET['mod']=='admin'){
+} else if ($_GET['mod']=='edit_profile'){
+    include"template/update_profile.php";
+
+}else if ($_GET['mod']=='admin'){
     include"admin/pengguna.php";
 
 } else if ($_GET['mod']=='detail_post'){
@@ -52,5 +55,11 @@ if ($_GET['mod']=='home'){
 
 } else if ($_GET['mod']=='all_user'){
     include "template/all_user.php";
+
+} else if ($_GET['mod']=='advo_user'){
+    include "template/advo_user.php";
+
+} else if ($_GET['mod']=='home_follow'){
+    include "template/home_follow.php";
 }
 ?>

@@ -23,55 +23,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $user_id = $_SESSION['user_id'];
 
     // Check if the user has already performed the action
-    $check_query = "SELECT * FROM post_actions WHERE post_id = $post_id AND user_id = $user_id";
+    $check_query = "SELECT * FROM post_actions WHERE post_id = $post_id AND user_id = $user_id AND action_type != 'repost'";
     $result = mysqli_query($koneksi, $check_query);
     $existing_action = mysqli_fetch_assoc($result);
 
     if ($action == 'like' || $action == 'dislike') {
         if ($existing_action) {
+            // User has already performed an action
             if ($existing_action['action_type'] == $action) {
-                // Remove like or dislike
+                // If user clicks the same action again, remove it (unlike or undislike)
                 $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_action['id'];
                 mysqli_query($koneksi, $delete_query);
-                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes - 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes - 1 WHERE id = $post_id";
-                mysqli_query($koneksi, $update_query);
             } else {
-                // Switch from like to dislike or vice versa
+                // If user switches from like to dislike or vice versa, update action type
                 $update_action_query = "UPDATE post_actions SET action_type = '$action' WHERE id = " . $existing_action['id'];
                 mysqli_query($koneksi, $update_action_query);
-                $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1, dislikes = dislikes - 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes + 1, likes = likes - 1 WHERE id = $post_id";
-                mysqli_query($koneksi, $update_query);
             }
         } else {
-            // Add new like or dislike
+            // User performs a new like or dislike action
             $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, '$action')";
             mysqli_query($koneksi, $insert_query);
-            $update_query = $action == 'like' ? "UPDATE posts SET likes = likes + 1 WHERE id = $post_id" : "UPDATE posts SET dislikes = dislikes + 1 WHERE id = $post_id";
-            mysqli_query($koneksi, $update_query);
         }
-    } elseif ($action == 'repost') {
-        if ($existing_action && $existing_action['action_type'] == 'repost') {
-            // Remove repost
-            $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_action['id'];
+    } 
+    // Separate logic for repost
+    elseif ($action == 'repost') {
+        // Check if the user has already reposted
+        $check_repost_query = "SELECT * FROM post_actions WHERE post_id = $post_id AND user_id = $user_id AND action_type = 'repost'";
+        $result_repost = mysqli_query($koneksi, $check_repost_query);
+        $existing_repost = mysqli_fetch_assoc($result_repost);
+
+        if ($existing_repost) {
+            // User has already reposted, remove repost action (unrepost)
+            $delete_query = "DELETE FROM post_actions WHERE id = " . $existing_repost['id'];
             mysqli_query($koneksi, $delete_query);
-            $delete_post_query = "DELETE FROM posts WHERE original_post_id = $post_id AND user_id = $user_id";
-            mysqli_query($koneksi, $delete_post_query);
         } else {
-            // Add new repost
+            // User reposts the post
             $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, 'repost')";
             mysqli_query($koneksi, $insert_query);
-            $repost_query = "INSERT INTO posts (user_id, content, image, likes, dislikes, comments_count, created_at, original_post_id) 
-                             SELECT $user_id, content, image, 0, 0, 0, NOW(), id FROM posts WHERE id = $post_id";
-            mysqli_query($koneksi, $repost_query);
         }
     }
 }
+
+
 
 // Fetch posts with most likes in the last 24 hours
 $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like' AND created_at >= NOW() - INTERVAL 1 DAY) AS likes,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike' AND created_at >= NOW() - INTERVAL 1 DAY) AS dislikes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost' AND created_at >= NOW() - INTERVAL 1 DAY) AS reposts
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost' AND created_at >= NOW() - INTERVAL 1 DAY) AS reposts,
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
           FROM posts p 
           JOIN users u ON p.user_id = u.id 
           WHERE p.created_at >= NOW() - INTERVAL 1 DAY

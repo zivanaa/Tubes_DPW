@@ -417,11 +417,16 @@ if (isset($_GET['search'])) {
                     <label for="updateEmail">Email:</label>
                     <input type="email" name="email" id="updateEmail" required>
                     <label for="updateRole">Role:</label>
-                    <input type="text" name="role" id="updateRole" required>
+                    <select name="role" id="updateRole" required>
+                        <option value="admin">admin</option>
+                        <option value="advokad">advokad</option>
+                        <option value="user">user</option>
+                    </select>
                     <button type="submit" name="update">Update</button>
                     <button type="button" class="cancel-button" onclick="closeModal()">Cancel</button>
                 </form>
             </div>
+
 
             <!-- Form for Delete -->
             <form id="deleteForm" method="post" style="display:none;">

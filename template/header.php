@@ -504,7 +504,7 @@ mysqli_close($koneksi);
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=trending">Trending</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home">Following</a>
+              <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home_follow">Following</a>
             </li>
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=chat">Chat</a>
@@ -521,13 +521,8 @@ mysqli_close($koneksi);
                     <a class="nav-link" href="?mod=all_user">Semua Pengguna</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?mod=trending">User</a>
+                    <a class="nav-link" href="?mod=advo_user">Advokad</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="?mod=trending">Advokad</a>
-                </li>
-                <
-                <li><a class="dropdown-item" style="color : #11174F" href="#">Something else here</a></li>
               </ul>
             </li>
           </ul>

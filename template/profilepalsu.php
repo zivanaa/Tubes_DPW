@@ -16,20 +16,6 @@ if ($koneksi->connect_error) {
     die("Koneksi database gagal: " . $koneksi->connect_error);
 }
 
-// Get user_id from username
-$user_query = "SELECT id FROM users WHERE username = ?";
-$stmt = mysqli_prepare($koneksi, $user_query);
-mysqli_stmt_bind_param($stmt, 's', $currentUsername);
-mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $user_id);
-mysqli_stmt_fetch($stmt);
-mysqli_stmt_close($stmt);
-
-if (!$user_id) {
-    echo "<script>alert('User not found'); window.location.href='template/login.php';</script>";
-    exit();
-}
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -76,103 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         }
     }
 }
-
-// Fetch user data
-$sql = "SELECT name, username, bio, dashboard, profile_image FROM users WHERE username = ?";
-$stmt = $koneksi->prepare($sql);
-
-if ($stmt === false) {
-    die("Error preparing statement: " . $koneksi->error);
-}
-
-$stmt->bind_param("s", $currentUsername);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows == 1) {
-    $user = $result->fetch_assoc();
-} else {
-    die("User tidak ditemukan.");
-}
-
-// Update profile data
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['profileName'];
-    $bio = $_POST['profileBio'];
-    $dashboard = $_POST['profileDashboard'];
-    $newUsername = $_POST['profileUsername'];
-
-    // Check if new username is already taken
-    $checkUsernameSql = "SELECT username FROM users WHERE username = ? AND username != ?";
-    $checkUsernameStmt = $koneksi->prepare($checkUsernameSql);
-    $checkUsernameStmt->bind_param("ss", $newUsername, $currentUsername);
-    $checkUsernameStmt->execute();
-    $checkUsernameResult = $checkUsernameStmt->get_result();
-
-    if ($checkUsernameResult->num_rows > 0) {
-        die("Username sudah digunakan.");
-    }
-
-
-    
-
-
-    // Assume $currentUsername is obtained from the session or previous query
-    $currentUsername = $_SESSION['username'];
-
-
-    // Handle profile image upload
-    $relativeImagePath = $user['profile_image']; // Default to current profile image
-    if (!empty($_FILES['profileImageUpload']['name'])) {
-        $uploadsDirectory = __DIR__ . '/../assets/profile/';
-        $filename = basename($_FILES['profileImageUpload']['name']);
-        $profileImage = $uploadsDirectory . $filename;
-        $relativeImagePath = 'assets/profile/' . $filename;
-
-        // Validate file type and size (e.g., only allow images and max 2MB)
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $fileType = mime_content_type($_FILES['profileImageUpload']['tmp_name']);
-        $fileSize = $_FILES['profileImageUpload']['size'];
-        if (!in_array($fileType, $allowedMimeTypes) || $fileSize > 2 * 1024 * 1024) {
-            die("File tidak valid. Hanya gambar dengan ukuran maksimal 2MB yang diperbolehkan.");
-        }
-
-        if (!move_uploaded_file($_FILES['profileImageUpload']['tmp_name'], $profileImage)) {
-            die("Gagal mengunggah file.");
-        }
-    }
-
-    
-
-    // Update user profile
-    $updateSql = "UPDATE users SET name = ?, bio = ?, dashboard = ?, profile_image = ?, username = ? WHERE username = ?";
-    $updateStmt = $koneksi->prepare($updateSql);
-
-    if ($updateStmt === false) {
-        die("Error preparing update statement: " . $koneksi->error);
-    }
-
-    $updateStmt->bind_param("ssssss", $name, $bio, $dashboard, $relativeImagePath, $newUsername, $currentUsername);
-
-    if ($updateStmt->execute()) {
-        // Update session data and user array
-        $_SESSION['username'] = $newUsername;
-        $user['name'] = $name;
-        $user['bio'] = $bio;
-        $user['dashboard'] = $dashboard;
-        $user['profile_image'] = $relativeImagePath;
-        $user['username'] = $newUsername;
-
-        // Redirect to user profile page
-        header("Location: ?mod=profile");
-        exit();
-    } else {
-        die("Error updating profile: " . $updateStmt->error);
-    }
-
-    $updateStmt->close();
-}
-
 
 // Fetch user data 
 $sql_user = "SELECT id, name, username, bio, dashboard, profile_image FROM users WHERE username = ?";
@@ -240,8 +129,8 @@ $stmt_content->bind_param("i", $user_id); // Use bind_param with "i" for integer
 $stmt_content->execute();
 $result_content = $stmt_content->get_result();
 
+$stmt_content->close();
 
-$stmt->close();
 $koneksi->close();
 ?>
 
@@ -460,6 +349,7 @@ $koneksi->close();
 <body>
     <br>
 
+   
     <div class="content">
         <div class="profile-card">
             <div class="profile-header">
@@ -486,7 +376,7 @@ $koneksi->close();
                 </div>
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
                 <div class="profile-buttons">
-                    <button id="editProfileBtn">Edit Profile</button>
+                    <button id="editProfileButton">Edit Profile</button>
                     <button>Share Profile</button>
                     <button>Logout</button>
                 </div>
@@ -496,15 +386,15 @@ $koneksi->close();
                 <p><?php echo nl2br(htmlspecialchars($user['dashboard'])); ?></p>
             </div>
         </div>
-    </div>
 
-    <!-- Modal for editing profile -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Edit Profile</h2>
-            <form action="" method="post" enctype="multipart/form-data">
-            <div class="form-group">
+
+        <!-- Modal for editing profile -->
+                <div id="editProfileModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2>Edit Profile</h2>
+                        <form action="?mod=update_profile" method="post" enctype="multipart/form-data">
+                           <div class="form-group">
                     <label for="profileImageUpload">Profile Image:</label>
                     <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
                     <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
@@ -527,53 +417,34 @@ $koneksi->close();
                 </div>
                 
                 <button type="submit">Save Changes</button>
-            </form>
-        </div>
-    </div>
+    </DIV>
+    </form>
+                    </div>
+                </div>
 
-    <script>
-        // JavaScript untuk modal
-        var modal = document.getElementById("editProfileModal");
-        var btn = document.getElementById("editProfileBtn");
-        var span = document.getElementsByClassName("close")[0];
+                
 
-        btn.onclick = function() {
-            modal.style.display = "flex";
-        }
+                <script>
+                    // Script untuk menampilkan modal edit profile
+                    var modal = document.getElementById('editProfileModal');
+                    var editProfileButton = document.getElementById('editProfileButton');
+                    var closeSpan = document.getElementsByClassName('close')[0];
 
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
+                    editProfileButton.onclick = function() {
+                        modal.style.display = 'block';
+                    }
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
+                    closeSpan.onclick = function() {
+                        modal.style.display = 'none';
+                    }
 
-        // Preview image
-        document.getElementById('profileImageUpload').addEventListener('change', function(e) {
-            var previewImage = document.getElementById('previewImage');
-            var file = e.target.files[0];
-            var reader = new FileReader();
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = 'none';
+                        }
+                    }
+                </script>
 
-            reader.onloadend = function() {
-                previewImage.src = reader.result;
-            }
-
-            if (file) {
-                reader.readAsDataURL(file);
-            } else {
-                previewImage.src = "<?php echo htmlspecialchars($user['profile_image']); ?>";
-            }
-        });
-        function validateUsername() {
-            const usernameInput = document.getElementById("profileUsername");
-            if (!usernameInput.value.includes('@')) {
-                usernameInput.value = '@';
-            }
-        }
-    </script>
 
     <!-- BAGIAN KONTEN USER -->
     <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">

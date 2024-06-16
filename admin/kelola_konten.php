@@ -447,18 +447,6 @@ if (isset($_GET['search'])) {
                             <input type="text" name="image" id="updateImage" required>
                         </div>
                         <div class="form-group">
-                            <label for="updateLikes">Likes:</label>
-                            <input type="text" name="likes" id="updateLikes" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="updateDislikes">Dislikes:</label>
-                            <input type="text" name="dislikes" id="updateDislikes" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="updateCommentsCount">Comments Count:</label>
-                            <input type="text" name="comments_count" id="updateCommentsCount" required>
-                        </div>
-                        <div class="form-group">
                             <label for="updateCreatedAt">Created At:</label>
                             <input type="text" name="created_at" id="updateCreatedAt" required>
                         </div>
@@ -489,14 +477,11 @@ if (isset($_GET['search'])) {
 
     <script>
         // Fungsi untuk membuka modal update
-        function openUpdateModal(id, userId, content, image, likes, dislikes, commentsCount, createdAt) {
+        function openUpdateModal(id, userId, content, image, createdAt) {
             document.getElementById('updateId').value = id;
             document.getElementById('updateUserId').value = userId;
             document.getElementById('updateContent').value = content;
             document.getElementById('updateImage').value = image;
-            document.getElementById('updateLikes').value = likes;
-            document.getElementById('updateDislikes').value = dislikes;
-            document.getElementById('updateCommentsCount').value = commentsCount;
             document.getElementById('updateCreatedAt').value = createdAt;
             document.getElementById('updateModal').style.display = 'flex';
         }

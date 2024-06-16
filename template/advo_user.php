@@ -31,11 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['follow_action'])) {
     }
 }
 
-// Fetch all users except the current user
+// Fetch all users with role = 'advokad' except the current user
 $query = "SELECT u.id, u.name, u.username, u.profile_image,
                  (SELECT COUNT(*) FROM followers WHERE follower_id = $user_id AND user_id = u.id) AS is_following
           FROM users u
-          WHERE u.id != $user_id";
+          WHERE u.id != $user_id AND u.role = 'advokad'";
 $result = mysqli_query($koneksi, $query);
 ?>
 
@@ -61,7 +61,7 @@ $result = mysqli_query($koneksi, $query);
 </style>
 
 <div class="container" style="margin-top: 20px;">
-    <h2 class="mb-4" ></h2>
+    <h2 class="mb-4"></h2>
     <div class="row">
         <?php while ($row = mysqli_fetch_assoc($result)): ?>
             <div class="col-12">
