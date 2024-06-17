@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
@@ -5,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-include "db_connect.php"; // File untuk koneksi ke database
+include "db_connect.php";
 
 $user_id = $_SESSION['user_id'];
 
@@ -35,158 +36,142 @@ if ($selected_contact_id) {
         $messages[] = $row;
     }
 }
+
+// Handle sending a message
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isset($_POST['message'])) {
+    $sender_id = $user_id;
+    $receiver_id = $_POST['receiver_id'];
+    $content = $_POST['message'];
+
+    $query = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("iis", $sender_id, $receiver_id, $content);
+    if ($stmt->execute()) {
+        header('Location: ?mod=chat&contact_id=' . $receiver_id);
+        exit();
+    } else {
+        echo "Failed to send message.";
+    }
+}
 ?>
 
 <?php include "header.php"; ?>
 <style>
-body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background-color: #f0f2f5;
-}
+/* CSS styles for chat section */
 .container {
     display: flex;
-    flex-grow: 1;
-    height: calc(100vh - 100px); 
 }
+
 .sidebar {
-    width: 30%;
-    background-color: white;
-    border-right: 1px solid #ddd;
+    width: 25%;
+    border-right: 1px solid #ccc;
+}
+
+.contacts {
     display: flex;
     flex-direction: column;
 }
-.search-bar {
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
-}
-.search-bar input {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-}
-.contacts {
-    flex-grow: 1;
-    overflow-y: auto;
-}
+
 .contact {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
+    padding: 10px;
     cursor: pointer;
 }
-.contact:hover {
-    background-color: #f9f9f9;
-}
+
 .contact img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-right: 1rem;
+    margin-right: 10px;
 }
-.contact .details {
-    display: flex;
-    flex-direction: column;
-}
-.contact .details .name {
-    font-weight: 500;
-}
-.contact .details .message {
-    color: #888;
-}
+
 .chat-section {
-    width: 70%;
+    width: 75%;
     display: flex;
     flex-direction: column;
-    background-color: white;
 }
+
 .chat-header {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ccc;
 }
+
 .chat-header img {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    margin-right: 1rem;
+    margin-right: 10px;
 }
+
 .chat-messages {
     flex-grow: 1;
-    padding: 1rem;
-    overflow-y: auto;
+    padding: 10px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 60vh; /* Maximum height for chat messages */
 }
+
 .message {
-    margin-bottom: 1rem;
+    margin-bottom: 10px;
     display: flex;
 }
+
 .message.sent {
     justify-content: flex-end;
 }
+
 .message .content {
     max-width: 60%;
-    padding: 0.75rem 1rem;
-    border-radius: 20px;
-    position: relative;
+    padding: 10px;
+    border-radius: 10px;
 }
-.message.received .content {
-    background-color: #f0f0f0;
-}
+
 .message.sent .content {
-    background-color: #0066cc;
-    color: white;
+    background-color: #007bff; /* Blue background for sent messages */
+    color: white; /* White text for sent messages */
 }
-.message .content::before {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
+
+.message.received .content {
+    background-color: #f1f0f0;
 }
-.message.received .content::before {
-    left: -10px;
-    top: 10px;
-    border: 10px solid transparent;
-    border-right: 10px solid #f0f0f0;
-}
-.message.sent .content::before {
-    right: -10px;
-    top: 10px;
-    border: 10px solid transparent;
-    border-left: 10px solid #0066cc;
-}
+
 .chat-input {
-    display: none; /* Hide by default, show when a contact is selected */
-    padding: 1rem;
-    border-top: 1px solid #ddd;
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
 }
-.chat-input input {
+
+.chat-input input[type="text"] {
     flex-grow: 1;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid #ccc;
     border-radius: 20px;
-    margin-right: 1rem;
+    margin-right: 10px;
 }
+
 .chat-input button {
-    background-color: #0066cc;
+    padding: 10px 20px;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
+    background-color: #007bff;
     color: white;
+    border-radius: 20px;
     cursor: pointer;
 }
+
+.chat-input button:hover {
+    background-color: #0056b3;
+}
+</style>
+
 </style>
 </head>
 <body>
     
 <div class="container">
     <div class="sidebar">
-        <!-- Kontak-kontak yang ditampilkan di sini -->
         <div class="contacts">
             <?php foreach ($contacts as $contact): ?>
                 <div class="contact" data-id="<?= $contact['id'] ?>">
@@ -199,15 +184,13 @@ body {
         </div>
     </div>
     <div class="chat-section">
-        <!-- Header Chat -->
         <div class="chat-header">
-            <img id="contact-profile-image" style="display:none;" alt="Profile">
-            <div id="contact-name"></div>
-        </div>
+            <img id="contact-profile-image" alt="Profile">
+             <div id="contact-name"></div>
+         </div>
 
         
-        <!-- Menampilkan pesan-pesan dari database -->
-        <div class="chat-messages">
+        <div class="chat-messages" id="chat-messages">
             <?php foreach ($messages as $message): ?>
                 <div class="message <?= $message['sender_id'] == $user_id ? 'sent' : 'received' ?>">
                     <div class="content"><?= htmlspecialchars($message['content']) ?></div>
@@ -215,11 +198,10 @@ body {
             <?php endforeach; ?>
         </div>
 
-        <!-- Form untuk mengirim pesan -->
         <div class="chat-input">
-            <form id="message-form" action="page.php?mod=send_message" method="post">
+            <form id="message-form" action="" method="post">
                 <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
-                <input type="text" id="message-input" name="message" placeholder="Type your message and press enter...">
+                <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
                 <button type="submit">Send</button>
             </form>
         </div>
@@ -228,51 +210,56 @@ body {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to load contact information from the server
-    function loadContactFromServer() {
-        fetch('load_contact.php')
+    function fetchMessages() {
+        var contactId = document.getElementById('contact-id').value;
+        fetch('fetch_messages.php?contact_id=' + contactId)
             .then(response => response.json())
             .then(data => {
-                if (data.contact_name && data.contact_image && data.contact_id) {
-                    // Update header chat with stored contact information
-                    document.getElementById('contact-name').textContent = data.contact_name;
-                    var profileImage = document.getElementById('contact-profile-image');
-                    profileImage.src = data.contact_image;
-                    profileImage.style.display = 'block';
+                var chatMessages = document.getElementById('chat-messages');
+                var shouldScrollToBottom = chatMessages.scrollTop + chatMessages.clientHeight === chatMessages.scrollHeight;
 
-                    // Update hidden input value with stored contact id
-                    document.getElementById('contact-id').value = data.contact_id;
+                chatMessages.innerHTML = ''; // Clear existing messages
 
-                    // Show form to send messages
-                    document.querySelector('.chat-input').style.display = 'flex';
+                data.messages.forEach(message => {
+                    var messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
+                    messageElement.classList.add(message.sender_id == <?= $user_id ?> ? 'sent' : 'received');
+
+                    var contentElement = document.createElement('div');
+                    contentElement.classList.add('content');
+                    contentElement.textContent = message.content;
+
+                    messageElement.appendChild(contentElement);
+                    chatMessages.appendChild(messageElement);
+                });
+
+                if (shouldScrollToBottom) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom if already at bottom
                 }
             })
-            .catch(error => console.error('Error loading contact:', error));
+            .catch(error => console.error('Error fetching messages:', error));
     }
 
-    // Load contact information when the page is loaded
-    loadContactFromServer();
+    setInterval(fetchMessages, 3000); // Refresh messages every 3 seconds
 
-    // Event listener for each contact
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+
     document.querySelectorAll('.contact').forEach(function(contact) {
         contact.addEventListener('click', function() {
             var contactId = this.getAttribute('data-id');
             var contactName = this.querySelector('.name').textContent;
             var contactImage = this.querySelector('img').src;
 
-            // Update header chat with selected contact information
             document.getElementById('contact-name').textContent = contactName;
             var profileImage = document.getElementById('contact-profile-image');
             profileImage.src = contactImage;
             profileImage.style.display = 'block';
-
-            // Update hidden input value with selected contact id
             document.getElementById('contact-id').value = contactId;
-
-            // Show form to send messages
             document.querySelector('.chat-input').style.display = 'flex';
 
-            // Store contact information on the server
             fetch('save_contact.php', {
                 method: 'POST',
                 headers: {
@@ -294,31 +281,21 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => console.error('Error saving contact:', error));
 
-            // Redirect to chat page with contact_id
             window.location.href = '?mod=chat&contact_id=' + contactId;
         });
     });
 
-    // Event listener for message sending form
-    document.getElementById('message-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        sendMessage();
-    });
-
-    // Function to send a message
     function sendMessage() {
         var form = document.getElementById('message-form');
         var message = form.querySelector('#message-input').value.trim();
 
         if (message !== '') {
-            // Submit form
             form.submit();
         }
     }
 });
-
-
-
 </script>
 
+
 <?php include "footer.php"; ?>
+
