@@ -50,6 +50,12 @@ if ($_GET['mod']=='home'){
 } else if ($_GET['mod']=='trending'){
     include "template/trending.php";
 
+} else if ($_GET['mod']=='send_message'){
+    include "template/send_message.php";
+
+}  else if ($_GET['mod']=='get_messages'){
+    include "template/get_messages.php";
+  
 } else if ($_GET['mod']=='all_user'){
     include "template/all_user.php";
 
@@ -58,5 +64,13 @@ if ($_GET['mod']=='home'){
 
 } else if ($_GET['mod']=='home_follow'){
     include "template/home_follow.php";
+
+} else if ($_GET['mod']=='save_contact'){
+    include "template/save_contact.php";
+
+}  else if ($_GET['mod']=='load_contact'){
+    include "template/load_contact.php";
+
 }
+
 ?>

@@ -198,7 +198,12 @@ if (isset($_GET['user_id'])) {
                     <?= $is_following ? 'Unfollow' : 'Follow' ?>
                 </button>
             </form>
-            <button style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px; margin-left : 100px">Message</button>
+            
+                <a href="?mod=chat&user_id=<?= $user_id ?>">
+                    <button style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px; margin-left: 100px">
+                        Message
+                    </button>
+                </a>
             <h4><?= htmlspecialchars($user['name']) ?></h4>
             <div class="profile-bio">
                 <p><?= htmlspecialchars($user['bio']) ?></p>
@@ -222,7 +227,7 @@ if (isset($_GET['user_id'])) {
             <?php while ($post = mysqli_fetch_assoc($posts_result)): ?>
             <div class="post mb-3" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white;">
                 <div class="d-flex">
-                    <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
+                    <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" alt="Avatar" class="avatar" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                     <div class="ms-3">
                         <h5 class="mb-0"><?= htmlspecialchars($user['name']) ?></h5>
                                                 <small style="color : #fff"><?= htmlspecialchars($user['username']) ?></small>
