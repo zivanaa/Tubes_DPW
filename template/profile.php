@@ -686,4 +686,4 @@ $koneksi->close();
     display: inline-block;
 }
 </style>
-<?php include "footer.php"; ?>
+<?php include "footer.php";?>

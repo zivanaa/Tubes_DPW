@@ -15,6 +15,15 @@ $koneksi = new mysqli("localhost", "root", "", "db_itsave");
 if ($koneksi->connect_error) {
     die("Koneksi database gagal: " . $koneksi->connect_error);
 }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
+    // Hapus semua data sesi
+    session_unset();
+    // Hancurkan sesi
+    session_destroy();
+    // Redirect ke halaman login
+    header('Location: page.php?mod=login');
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
@@ -378,7 +387,10 @@ $koneksi->close();
                 <div class="profile-buttons">
                     <button id="editProfileButton">Edit Profile</button>
                     <button>Share Profile</button>
-                    <button>Logout</button>
+                    <form method="post">
+    <button type="submit" name="logout">Logout</button>
+</form>
+
                 </div>
             </div>
             <div class="dashboard">
@@ -404,9 +416,10 @@ $koneksi->close();
                     <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
                 </div>
                 <div class="form-group">
-                    <label for="profileUsername">Username:</label>
-                    <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
-                </div>
+    <label for="profileUsername">Username:</label>
+    <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
+</div>
+
                 <div class="form-group">
                     <label for="profileBio">Bio:</label>
                     <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
@@ -531,6 +544,26 @@ $koneksi->close();
         </ul>
     </nav>
 
+    <script>
+    // Function untuk memfilter input pada field username
+    function filterUsernameInput() {
+        var usernameInput = document.getElementById('profileUsername');
+        var currentValue = usernameInput.value;
+
+        // Pastikan "@" tetap ada di awal input
+        if (!currentValue.startsWith('@')) {
+            usernameInput.value = '@' + currentValue;
+        }
+    }
+
+    // Event listener untuk memanggil fungsi filter saat input berubah
+    document.addEventListener('DOMContentLoaded', function () {
+        var usernameInput = document.getElementById('profileUsername');
+        usernameInput.addEventListener('input', filterUsernameInput);
+    });
+</script>
+
+
 
 </body>
 
@@ -557,4 +590,4 @@ $koneksi->close();
     display: inline-block;
 }
 </style>
-<?php include "footer.php"; ?>
+<?php include "footer.php";?>

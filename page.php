@@ -20,10 +20,7 @@ if ($_GET['mod']=='home'){
 } else if ($_GET['mod']=='chat'){
     include"template/chat.php";
 
-} else if ($_GET['mod']=='edit_profile'){
-    include"template/edit_profile.php";
-
-} else if ($_GET['mod']=='list_chat'){
+}  else if ($_GET['mod']=='list_chat'){
     include"template/list_chat.php";
 
 } else if ($_GET['mod']=='komen'){
@@ -32,7 +29,7 @@ if ($_GET['mod']=='home'){
 } else if ($_GET['mod']=='profile'){
     include"template/profilepalsu.php";
 
-} else if ($_GET['mod']=='edit_profile'){
+} else if ($_GET['mod']=='update_profile'){
     include"template/update_profile.php";
 
 }else if ($_GET['mod']=='admin'){
