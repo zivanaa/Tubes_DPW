@@ -125,25 +125,25 @@ $result = mysqli_query($koneksi, $query);
                     </div>
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-actions">
-                            <form method="post" style="display: inline;">
+                            <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="like">
                                 <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Like (<?= $row['likes'] ?>)</button>
                             </form>
                             |
-                            <form method="post" style="display: inline;">
+                            <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px ">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="dislike">
                                 <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Dislike (<?= $row['dislikes'] ?>)</button>
                             </form>
                             |
-                            <form method="post" style="display: inline;">
+                            <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="repost">
                                 <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Repost (<?= $row['reposts'] ?>)</button>
                             </form>
                             |
-                            <a href="?mod=detail_post&post_id=<?= $row['id'] ?>">Comments (<?= $row['comments_count'] ?>)</a>
+                            <a style="display: inline; margin-left: 30px; margin-right: 30px" href="?mod=detail_post&post_id=<?= $row['id'] ?>">Comments (<?= $row['comments_count'] ?>)</a>
                         </div>
                     </div>
                 </div>

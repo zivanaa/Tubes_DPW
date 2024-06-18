@@ -29,6 +29,8 @@
             margin: 0 auto;
             padding: 20px;
             max-width: 600px;
+            border-radius: 15px; /* Membuat ujung kontainer tidak runcing */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19); /* Menambahkan efek 3D */
         }
         form {
             background-color: #fff;
@@ -106,7 +108,8 @@
                 <button type="submit">Log In</button>
             </div>
         </form>
-        <br>
+        <p style="text-align: center; color: white;">Belum memiliki akun? <a href="page.php?mod=registrasi_user" style="color: #1da1f2;">Registrasi</a></p>
+        
     </div>
     <br>
     <br>
