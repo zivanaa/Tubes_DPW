@@ -58,10 +58,22 @@ $result = mysqli_query($koneksi, $query);
         text-decoration: none;
         color: inherit;
     }
+    /* Centering the container */
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
 </style>
 
-<div class="container" style="margin-top: 20px;">
-    <h2 class="mb-4" ></h2>
+<div class="container">
+    <h2 class="mb-4"></h2>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <input type="text" id="search" class="form-control" placeholder="Search users...">
+        </div>
+    </div>
     <div class="row">
         <?php while ($row = mysqli_fetch_assoc($result)): ?>
             <div class="col-12">
@@ -90,5 +102,23 @@ $result = mysqli_query($koneksi, $query);
         <?php endwhile; ?>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('search');
+
+        searchInput.addEventListener('input', function() {
+            var filter = searchInput.value.toLowerCase();
+            var users = document.querySelectorAll('.user-card');
+
+            users.forEach(function(user) {
+                var userName = user.querySelector('.card-body .user-link .card-title').textContent.toLowerCase();
+                var userUsername = user.querySelector('.card-body .user-link .card-subtitle').textContent.toLowerCase();
+                var displayStyle = (userName.includes(filter) || userUsername.includes(filter)) ? 'block' : 'none';
+                user.style.display = displayStyle;
+            });
+        });
+    });
+</script>
 
 <?php include "footer.php"; ?>
