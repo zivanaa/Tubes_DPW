@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
     exit();
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -406,44 +405,44 @@ $koneksi->close();
         <span class="close">&times;</span>
         <h2>Edit Profile</h2>
         <form action="?mod=update_profile" method="post" enctype="multipart/form-data">
-    <!-- Input untuk mengunggah gambar profil -->
-    <div class="form-group">
-        <label for="profileImageUpload">Profile Image:</label>
-        <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
-        <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
-    </div>
-    <!-- Input untuk nama, username, bio, dan dashboard -->
-    <div class="form-group">
-        <label for="profileName">Name:</label>
-        <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="profileUsername">Username:</label>
-        <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
-    </div>
-    <div class="form-group">
-        <label for="profileBio">Bio:</label>
-        <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
-    </div>
-    <div class="form-group">
-        <label for="profileDashboard">Dashboard:</label>
-        <input type="text" id="profileDashboard" name="profileDashboard" value="<?php echo htmlspecialchars($user['dashboard']); ?>">
-    </div>
-    <button type="submit">Save Changes</button>
-</form>
-
-
+            <!-- Pratinjau Gambar Profil -->
+            <div class="form-group">
+                <label for="profileImageUpload">Profile Image:</label>
+                <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
+                <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label for="profileName">Name:</label>
+                <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="profileUsername">Username:</label>
+                <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
+            </div>
+            <div class="form-group">
+                <label for="profileBio">Bio:</label>
+                <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
+            </div>
+            <div class="form-group">
+                <label for="profileDashboard">Dashboard:</label>
+                <input type="text" id="profileDashboard" name="profileDashboard" value="<?php echo htmlspecialchars($user['dashboard']); ?>">
+            </div>
+            <button type="submit">Save Changes</button>
+        </form>
     </div>
 </div>
 
+// Script untuk menampilkan modal edit profile
 <script>
-    // Script untuk menampilkan modal edit profile
     var modal = document.getElementById('editProfileModal');
     var editProfileButton = document.getElementById('editProfileButton');
     var closeSpan = document.getElementsByClassName('close')[0];
 
     editProfileButton.onclick = function () {
         modal.style.display = 'block';
+        // Menampilkan foto profil yang sudah diunggah saat modal dibuka
+        var profileImage = '<?php echo htmlspecialchars($user["profile_image"]); ?>';
+        previewImage.src = profileImage;
     }
 
     closeSpan.onclick = function () {
@@ -471,6 +470,7 @@ $koneksi->close();
         reader.readAsDataURL(file);
     }
 </script>
+
 
 
     <!-- BAGIAN KONTEN USER -->

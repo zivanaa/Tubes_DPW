@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
@@ -46,6 +47,7 @@ if ($selected_contact_id) {
     }
 }
 
+
 // Handle sending a message
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isset($_POST['message'])) {
     $sender_id = $user_id;
@@ -63,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     }
 }
 ?>
-
 <?php include "header.php"; ?>
 <style>
 /* CSS styles for chat section */
@@ -175,11 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     background-color: #0056b3;
 }
 </style>
-
-</style>
 </head>
 <body>
-    
 <div class="container">
     <div class="sidebar">
         <div class="contacts">
@@ -199,27 +197,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
             <div id="contact-name"><?= isset($selected_contact['name']) ? $selected_contact['name'] : ''; ?></div>
          </div>
 
-        
-        <div class="chat-messages" id="chat-messages">
-            <?php foreach ($messages as $message): ?>
-                <div class="message <?= $message['sender_id'] == $user_id ? 'sent' : 'received' ?>">
-                    <div class="content"><?= htmlspecialchars($message['content']) ?></div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+    <div class="chat-messages" id="chat-messages">
+        <?php foreach ($messages as $message): ?>
+            <div class="message <?= $message['sender_id'] == $user_id ? 'sent' : 'received' ?>">
+                <div class="content"><?= htmlspecialchars($message['content']) ?></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-        <div class="chat-input" style="display: <?= isset($selected_contact_id) ? 'flex' : 'none'; ?>;">
-            <form id="message-form" action="" method="post">
-                <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
-                <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
-                <button type="submit">Send</button>
-            </form>
-        </div>
+    <div class="chat-input" style="display: <?= isset($selected_contact_id) ? 'flex' : 'none'; ?>;">
+        <form id="message-form" action="" method="post">
+            <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
+            <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
+            <button type="submit">Send</button>
+        </form>
     </div>
 </div>
-
+</div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function scrollToBottom() {
+        var chatMessages = document.getElementById('chat-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Panggil fungsi untuk mengatur scroll ke bawah saat halaman dimuat
+    scrollToBottom();
+    var initialContactId = document.getElementById('contact-id').value;
+    if (!initialContactId) {
+        document.querySelector('.chat-messages').style.display = 'none';
+        document.querySelector('.chat-input').style.display = 'none';
+    }
     function fetchMessages(contactId) {
         fetch('fetch_messages.php?contact_id=' + contactId)
             .then(response => response.json())
@@ -290,5 +298,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
 <?php include "footer.php"; ?>

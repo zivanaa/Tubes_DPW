@@ -29,8 +29,14 @@ if (!isset($_SESSION['user_id'])) {
 <!-- Notification Popup -->
 <div id="notification" class="notification" style="display: none;">
     <span id="notification-message"></span>
-    <button onclick="closeNotification()">x</button>
+    <button onclick="closeNotification()" style="background: none;">x</button>
+    <br>
+    <div class="notification-buttons">
+     <a class="home-button" href="?mod=home" style="text-decoration: none;">Go to Home</a>
+    </div>
 </div>
+
+
 
 <?php include "footer.php"; ?>
 
@@ -113,6 +119,11 @@ function removeImage(index) {
     previewImages();
 }
 
+function refreshContent() {
+    location.reload(); // Merefresh halaman
+}
+
+
 function showNotification(message) {
     var notification = document.getElementById('notification');
     var notificationMessage = document.getElementById('notification-message');
@@ -124,36 +135,47 @@ function showNotification(message) {
 function closeNotification() {
     var notification = document.getElementById('notification');
     notification.style.display = 'none';
+    refreshContent(); // Merefresh konten setelah menutup notifikasi
 }
+
 </script>
 
 <style>
 .notification {
     position: fixed;
-    bottom: 10px;
+    top: 30%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background-color: #8a8a8a;
     color: #fff;
-    padding: 15px;
+    padding: 15px; /* Reduce padding for smaller size */
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     display: none;
+    max-width: 80%;
+    width: auto;
+    text-align: center;
 }
 
-.notification button {
-    background: none;
+.notification-buttons {
+    margin-top: 10px; /* Add margin between message and buttons */
+}
+
+.home-button {
+    background-color: blue;
+    color: white;
     border: none;
-    color: #fff;
-    font-size: 20px;
-    margin-left: 10px;
+    padding: 5px 10px; /* Adjust padding for smaller size */
+    font-size: 14px; /* Reduce font size for smaller button */
     cursor: pointer;
 }
 
-.notification button:hover {
-    color: #ccc;
+.home-button:hover {
+    background-color: darkblue;
 }
+
+
 
 .preview-container {
     display: flex;
@@ -185,4 +207,14 @@ function closeNotification() {
 .remove-btn:hover {
     background: darkred;
 }
+
+.profile {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+
 </style>
