@@ -240,6 +240,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    function loadContactFromServer() {
+        fetch('load_contact.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.contact_name && data.contact_image && data.contact_id) {
+                    // Update header chat with stored contact information
+                    document.getElementById('contact-name').textContent = data.contact_name;
+                    var profileImage = document.getElementById('contact-profile-image');
+                    profileImage.src = data.contact_image;
+                    profileImage.style.display = 'block';
+
+                    // Update hidden input value with stored contact id
+                    document.getElementById('contact-id').value = data.contact_id;
+
+                    // Show form to send messages
+                    document.querySelector('.chat-input').style.display = 'flex';
+                }
+            })
+            .catch(error => console.error('Error loading contact:', error));
+    }
+
+    // Load contact information when the page is loaded
+    loadContactFromServer();
+
     function scrollToBottom() {
         var chatMessages = document.getElementById('chat-messages');
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -317,7 +342,37 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.chat-input').style.display = 'flex';
 
             fetchMessages(contactId);
+
+            fetch('save_contact.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'contact_id': contactId,
+                    'contact_name': contactName,
+                    'contact_image': contactImage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Contact saved successfully');
+                } else {
+                    console.error('Failed to save contact');
+                }
+            })
+            .catch(error => console.error('Error saving contact:', error));
+
+            // Redirect to chat page with contact_id
+            window.location.href = '?mod=chat&contact_id=' + contactId;
+
         });
+    });
+
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage();
     });
 
     function sendMessage() {
