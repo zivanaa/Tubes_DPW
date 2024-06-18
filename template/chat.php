@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
@@ -41,12 +40,12 @@ if ($selected_contact_id) {
     $stmt->bind_param("iiii", $user_id, $selected_contact_id, $selected_contact_id, $user_id);
     $stmt->execute();
     $messages_result = $stmt->get_result();
-
+    
     while ($row = $messages_result->fetch_assoc()) {
+        $row['timestamp'] = date("Y-m-d H:i:s", strtotime($row['timestamp']));
         $messages[] = $row;
     }
 }
-
 
 // Handle sending a message
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isset($_POST['message'])) {
@@ -106,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     display: flex;
     align-items: center;
     padding: 10px;
-    background-color: #11174F;; /* Blue background for chat header */
+    background-color: #11174F; /* Blue background for chat header */
     color: white; /* White text for chat header */
     border-bottom: 1px solid #ccc;
 }
@@ -128,25 +127,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
 .message {
     margin-bottom: 10px;
     display: flex;
+    flex-direction: column;
 }
 
 .message.sent {
-    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.message.received {
+    align-items: flex-start;
 }
 
 .message .content {
     max-width: 60%;
     padding: 10px;
     border-radius: 10px;
+    position: relative;
 }
 
 .message.sent .content {
     background-color: #007bff; /* Blue background for sent messages */
     color: white; /* White text for sent messages */
+    order: 1;
+}
+
+.message.sent .timestamp {
+    order: 2;
+    text-align: right; /* Align text to the right */
 }
 
 .message.received .content {
     background-color: #f1f0f0;
+    order: 1;
+}
+
+.message.received .timestamp {
+    order: 2;
+    text-align: left; /* Align text to the left */
+}
+
+.message .timestamp {
+    font-size: 0.8em;
+    color: gray;
+    margin-top: 5px;
 }
 
 .chat-input {
@@ -195,24 +218,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
         <div class="chat-header">
             <img id="contact-profile-image" src="<?= isset($selected_contact['profile_image']) ? $selected_contact['profile_image'] : ''; ?>" alt="Profile" style="display: <?= isset($selected_contact['profile_image']) ? 'block' : 'none'; ?>;">
             <div id="contact-name"><?= isset($selected_contact['name']) ? $selected_contact['name'] : ''; ?></div>
-         </div>
+        </div>
 
-    <div class="chat-messages" id="chat-messages">
-        <?php foreach ($messages as $message): ?>
-            <div class="message <?= $message['sender_id'] == $user_id ? 'sent' : 'received' ?>">
-                <div class="content"><?= htmlspecialchars($message['content']) ?></div>
-            </div>
-        <?php endforeach; ?>
-    </div>
+        <div class="chat-messages" id="chat-messages">
+            <?php foreach ($messages as $message): ?>
+                <div class="message <?= $message['sender_id'] == $user_id ? 'sent' : 'received' ?>">
+                    <div class="content"><?= htmlspecialchars($message['content']) ?></div>
+                    <div class="timestamp"><?= htmlspecialchars($message['timestamp']) ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
-    <div class="chat-input" style="display: <?= isset($selected_contact_id) ? 'flex' : 'none'; ?>;">
-        <form id="message-form" action="" method="post">
-            <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
-            <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
-            <button type="submit">Send</button>
-        </form>
+        <div class="chat-input" style="display: <?= isset($selected_contact_id) ? 'flex' : 'none'; ?>;">
+            <form id="message-form" action="" method="post">
+                <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
+                <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
+                <button type="submit">Send</button>
+            </form>
+        </div>
     </div>
-</div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -221,13 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Panggil fungsi untuk mengatur scroll ke bawah saat halaman dimuat
+    // Call function to scroll to the bottom when the page loads
     scrollToBottom();
+
     var initialContactId = document.getElementById('contact-id').value;
     if (!initialContactId) {
         document.querySelector('.chat-messages').style.display = 'none';
         document.querySelector('.chat-input').style.display = 'none';
     }
+
     function fetchMessages(contactId) {
         fetch('fetch_messages.php?contact_id=' + contactId)
             .then(response => response.json())
@@ -245,9 +271,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         var contentElement = document.createElement('div');
                         contentElement.classList.add('content');
+                        contentElement.textContent = message.content
                         contentElement.textContent = message.content;
 
+                        var timestampElement = document.createElement('div');
+                        timestampElement.classList.add('timestamp');
+                        timestampElement.textContent = message.timestamp;
+
                         messageElement.appendChild(contentElement);
+                        messageElement.appendChild(timestampElement);
                         chatMessages.appendChild(messageElement);
                     });
 

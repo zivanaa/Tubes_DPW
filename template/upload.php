@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $image_names = [];
 
     // Proses upload gambar jika ada
-    if (isset($_FILES['upload-images']) && count($_FILES['upload-images']['name']) > 0) {
+    if (isset($_FILES['upload-images']) && count($_FILES['upload-images']['name']) > 0 && $_FILES['upload-images']['name'][0] != "") {
         $total_files = count($_FILES['upload-images']['name']);
 
         if ($total_files > 4) {
