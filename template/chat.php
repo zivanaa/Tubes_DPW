@@ -203,17 +203,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
 <body>
 <div class="container">
     <div class="sidebar">
-        <div class="contacts">
-            <?php foreach ($contacts as $contact): ?>
-                <div class="contact" data-id="<?= $contact['id'] ?>">
-                    <img src="<?= $contact['profile_image'] ?>" alt="Profile">
-                    <div class="details">
-                        <div class="name"><?= $contact['name'] ?></div>
-                    </div>
+    <input type="text" id="contact-search" placeholder="Search contacts...">
+    <div class="contacts">
+        <?php foreach ($contacts as $contact): ?>
+            <div class="contact" data-id="<?= $contact['id'] ?>">
+                <img src="<?= $contact['profile_image'] ?>" alt="Profile">
+                <div class="details">
+                    <div class="name"><?= $contact['name'] ?></div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
+        <?php endforeach; ?>
     </div>
+    
+</div>
+
     <div class="chat-section">
         <div class="chat-header">
             <img id="contact-profile-image" src="<?= isset($selected_contact['profile_image']) ? $selected_contact['profile_image'] : ''; ?>" alt="Profile" style="display: <?= isset($selected_contact['profile_image']) ? 'block' : 'none'; ?>;">
@@ -383,6 +386,20 @@ document.addEventListener('DOMContentLoaded', function() {
             form.submit();
         }
     }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    var contactSearch = document.getElementById('contact-search');
+    var contacts = document.querySelectorAll('.contact');
+
+    contactSearch.addEventListener('input', function() {
+        var filter = contactSearch.value.toLowerCase();
+
+        contacts.forEach(function(contact) {
+            var name = contact.querySelector('.name').textContent.toLowerCase();
+            var displayStyle = name.includes(filter) ? 'flex' : 'none';
+            contact.style.display = displayStyle;
+        });
+    });
 });
 </script>
 <?php include "footer.php"; ?>
