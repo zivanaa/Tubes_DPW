@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
@@ -25,7 +24,17 @@ while ($row = $contacts_result->fetch_assoc()) {
 // Mengambil pesan antara pengguna yang sedang login dan kontak yang dipilih
 $selected_contact_id = isset($_GET['contact_id']) ? (int)$_GET['contact_id'] : null;
 $messages = [];
+$selected_contact = null;
 if ($selected_contact_id) {
+    // Mengambil informasi kontak yang dipilih
+    $contact_query = "SELECT name, profile_image FROM users WHERE id = ?";
+    $stmt = $conn->prepare($contact_query);
+    $stmt->bind_param("i", $selected_contact_id);
+    $stmt->execute();
+    $contact_result = $stmt->get_result();
+    $selected_contact = $contact_result->fetch_assoc();
+
+    // Mengambil pesan antara pengguna yang sedang login dan kontak yang dipilih
     $messages_query = "SELECT sender_id, content, timestamp FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY timestamp ASC";
     $stmt = $conn->prepare($messages_query);
     $stmt->bind_param("iiii", $user_id, $selected_contact_id, $selected_contact_id, $user_id);
@@ -96,7 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     display: flex;
     align-items: center;
     padding: 10px;
-    background-color: #f1f1f1;
+    background-color: #11174F;; /* Blue background for chat header */
+    color: white; /* White text for chat header */
     border-bottom: 1px solid #ccc;
 }
 
@@ -185,8 +195,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     </div>
     <div class="chat-section">
         <div class="chat-header">
-            <img id="contact-profile-image" alt="Profile">
-             <div id="contact-name"></div>
+            <img id="contact-profile-image" src="<?= isset($selected_contact['profile_image']) ? $selected_contact['profile_image'] : ''; ?>" alt="Profile" style="display: <?= isset($selected_contact['profile_image']) ? 'block' : 'none'; ?>;">
+            <div id="contact-name"><?= isset($selected_contact['name']) ? $selected_contact['name'] : ''; ?></div>
          </div>
 
         
@@ -198,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
             <?php endforeach; ?>
         </div>
 
-        <div class="chat-input">
+        <div class="chat-input" style="display: <?= isset($selected_contact_id) ? 'flex' : 'none'; ?>;">
             <form id="message-form" action="" method="post">
                 <input type="hidden" id="contact-id" name="receiver_id" value="<?php echo isset($selected_contact_id) ? $selected_contact_id : ''; ?>">
                 <input type="text" id ="message-input" name="message" placeholder="Type your message and press enter...">
@@ -210,37 +220,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function fetchMessages() {
-        var contactId = document.getElementById('contact-id').value;
+    function fetchMessages(contactId) {
         fetch('fetch_messages.php?contact_id=' + contactId)
             .then(response => response.json())
             .then(data => {
-                var chatMessages = document.getElementById('chat-messages');
-                var shouldScrollToBottom = chatMessages.scrollTop + chatMessages.clientHeight === chatMessages.scrollHeight;
+                if (data.status === 'success') {
+                    var chatMessages = document.getElementById('chat-messages');
+                    var shouldScrollToBottom = chatMessages.scrollTop + chatMessages.clientHeight === chatMessages.scrollHeight;
 
-                chatMessages.innerHTML = ''; // Clear existing messages
+                    chatMessages.innerHTML = ''; // Clear existing messages
 
-                data.messages.forEach(message => {
-                    var messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
-                    messageElement.classList.add(message.sender_id == <?= $user_id ?> ? 'sent' : 'received');
+                    data.messages.forEach(message => {
+                        var messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.classList.add(message.sender_id == <?= $user_id ?> ? 'sent' : 'received');
 
-                    var contentElement = document.createElement('div');
-                    contentElement.classList.add('content');
-                    contentElement.textContent = message.content;
+                        var contentElement = document.createElement('div');
+                        contentElement.classList.add('content');
+                        contentElement.textContent = message.content;
 
-                    messageElement.appendChild(contentElement);
-                    chatMessages.appendChild(messageElement);
-                });
+                        messageElement.appendChild(contentElement);
+                        chatMessages.appendChild(messageElement);
+                    });
 
-                if (shouldScrollToBottom) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom if already at bottom
+                    if (shouldScrollToBottom) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom if already at bottom
+                    }
+                } else {
+                    console.error('Error fetching messages:', data.message);
                 }
             })
             .catch(error => console.error('Error fetching messages:', error));
     }
 
-    setInterval(fetchMessages, 3000); // Refresh messages every 3 seconds
+    setInterval(() => {
+        var contactId = document.getElementById('contact-id').value;
+        if (contactId) fetchMessages(contactId);
+    }, 3000); // Refresh messages every 3 seconds
 
     document.getElementById('message-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -260,28 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('contact-id').value = contactId;
             document.querySelector('.chat-input').style.display = 'flex';
 
-            fetch('save_contact.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    'contact_id': contactId,
-                    'contact_name': contactName,
-                    'contact_image': contactImage
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Contact saved successfully');
-                } else {
-                    console.error('Failed to save contact');
-                }
-            })
-            .catch(error => console.error('Error saving contact:', error));
-
-            window.location.href = '?mod=chat&contact_id=' + contactId;
+            fetchMessages(contactId);
         });
     });
 
@@ -296,6 +291,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-
 <?php include "footer.php"; ?>
-
