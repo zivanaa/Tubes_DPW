@@ -19,6 +19,8 @@ if (mysqli_connect_errno()) {
 }
 
 
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -82,6 +84,13 @@ $query = "SELECT p.*, u.name, u.profile_image, u.username,
           ORDER BY p.created_at DESC";
 $result = mysqli_query($koneksi, $query);
 
+$search_keyword = '';
+if (isset($_GET['search'])) {
+    $search_keyword = mysqli_real_escape_string($koneksi, $_GET['search']);
+    $query .= " AND p.content LIKE '%$search_keyword%'";
+}
+
+
 if (!$result) {
     echo "Error: " . mysqli_error($koneksi);
     exit();
@@ -94,6 +103,16 @@ if (!$result) {
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
         <div class="col-md-6 feed" style="margin: 0 auto;">
+            <!-- Search bar -->
+            <form method="get" action="page.php" class="mb-3">
+                <input type="hidden" name="mod" value="home_follow">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search posts" style="background-color: #ecebfc"value="<?= htmlspecialchars($search_keyword) ?>">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form>
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
                     <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
@@ -108,27 +127,31 @@ if (!$result) {
                     </a>
                     <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
                     <div class="horizontal-scroll">
-                        <?php foreach (explode(",", $row['image']) as $image): ?>
-                            <!-- Tambahkan link untuk membuka modal -->
-                            <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
-                                <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
-                            </a>
+                        <?php if (!empty($row['image'])): ?>
+            <div class="horizontal-scroll">
+                <?php foreach (explode(",", $row['image']) as $image): ?>
+                    <!-- Tambahkan link untuk membuka modal -->
+                    <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
+                        <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
+                    </a>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
-                                            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
-                                        </div>
-                                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
                                 </div>
                             </div>
-                        <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
                     </div>
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-actions">

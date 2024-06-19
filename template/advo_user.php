@@ -44,10 +44,11 @@ $result = mysqli_query($koneksi, $query);
 <style>
     .user-card {
         transition: transform 0.2s;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
     .user-card:hover {
         transform: scale(1.05);
+        
     }
     .profile-image {
         width: 50px;
@@ -58,14 +59,37 @@ $result = mysqli_query($koneksi, $query);
         text-decoration: none;
         color: inherit;
     }
+    /* Centering the container */
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
 </style>
 
-<div class="container" style="margin-top: 20px;">
-    <h2 class="mb-4"></h2>
-    <div class="row">
+<div class="container">
+    <div class="row mb-4 col-10 text-center"  >
+        <h7 class="mb-2">Search for Advokad Here:</h7>
+        <div class="input-group">
+            <input type="text" id="search" class="form-control" placeholder="Search users...">
+        </div>
+    </div>
+
+    <!-- <form method="get" action="page.php" class="mb-3">
+                <input type="hidden" name="mod" value="home">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search posts" value="<?= htmlspecialchars($search_keyword) ?>">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form> -->
+
+    <div class="row col-12">
         <?php while ($row = mysqli_fetch_assoc($result)): ?>
-            <div class="col-12">
-                <div class="card user-card">
+            <div class="col-12 user-card">
+                <div class="card col-12 user-card">
                     <div class="card-body d-flex align-items-center">
                         <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['id']) ?>" class="user-link">
                             <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle mr-3 profile-image" alt="Profile Image">
@@ -90,5 +114,24 @@ $result = mysqli_query($koneksi, $query);
         <?php endwhile; ?>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('search');
+
+        searchInput.addEventListener('input', function() {
+            var filter = searchInput.value.toLowerCase();
+            var users = document.querySelectorAll('.user-card');
+
+            users.forEach(function(user) {
+                var userName = user.querySelector('.user-card .card-body .user-link .card-title').textContent.toLowerCase();
+                var userUsername = user.querySelector('.user-card .card-body .user-link .card-subtitle').textContent.toLowerCase();
+                var displayStyle = (userName.includes(filter) || userUsername.includes(filter)) ? 'block' : 'none';
+            user.style.display = displayStyle;
+            
+            });
+        });
+    });
+</script>
 
 <?php include "footer.php"; ?>

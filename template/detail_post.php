@@ -16,7 +16,6 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
     $action = $_POST['action'];
@@ -127,6 +126,8 @@ $comments_result = mysqli_stmt_get_result($stmt);
                     </div>
                 </a>
                 <p class="mt-3"><?= htmlspecialchars($post['content']) ?></p>
+                
+                <?php if (!empty($post['image'])): ?>
                 <div class="horizontal-scroll">
                     <?php foreach (explode(",", $post['image']) as $image): ?>
                         <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $post['id'] ?>">
@@ -147,6 +148,8 @@ $comments_result = mysqli_stmt_get_result($stmt);
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
+                
                 <div class="d-flex justify-content-between" style="color: white;">
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-actions">
@@ -173,7 +176,7 @@ $comments_result = mysqli_stmt_get_result($stmt);
                     </div>
                 </div>
             </div>
-            <h4 class="mt-5" style="color: white;">Comments</h4>
+            <h4 class="mt-5" style="color: black;">Comments</h4>
             <?php while ($comment = mysqli_fetch_assoc($comments_result)): ?>
                 <div class="comment mb-3" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #11174F; color: white;">
                     <div class="d-flex">

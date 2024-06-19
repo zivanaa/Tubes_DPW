@@ -18,6 +18,10 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
+date_default_timezone_set('Asia/Jakarta');
+
+
 // Mendapatkan informasi pengguna dari database
 $user_id = $_SESSION['user_id'];
 
@@ -488,15 +492,14 @@ mysqli_close($koneksi);
     </div>
     <!---header finish--->
     <!---nav star--->
-    <nav class="navbar navbar-expand-lg" style="background-color: #1974CF;">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#"></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarScroll">
-          <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
-            
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #1974CF;">
+  <a class="navbar-brand" href="#"></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" style="color : #fff" href="?mod=home">Halaman Utama</a>
             </li>
@@ -523,13 +526,12 @@ mysqli_close($koneksi);
                 <li class="nav-item">
                     <a class="nav-link" href="?mod=advo_user">Advokad</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="?mod=report">Report</a>
+</li>
               </ul>
             </li>
           </ul>
-          <form class="d-flex" role="search" style="color : #fff">
-            <input class="form-control me-2" style="color : #11174F" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" style="color : #fff" type="submit">Search</button>
-          </form>
         </div>
       </div>
   </nav>  

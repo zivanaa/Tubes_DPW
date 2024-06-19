@@ -16,6 +16,13 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
+// Pemrosesan pencarian
+$search_keyword = "";
+if (isset($_GET['search'])) {
+    $search_keyword = $_GET['search'];
+    // Tambahkan sanitasi input jika diperlukan
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $post_id = $_POST['post_id'];
@@ -65,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 }
 
 
-
 // Fetch posts with most likes in the last 24 hours
 $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like' AND created_at >= NOW() - INTERVAL 1 DAY) AS likes,
@@ -77,6 +83,48 @@ $query = "SELECT p.*, u.name, u.profile_image, u.username,
           WHERE p.created_at >= NOW() - INTERVAL 1 DAY
           ORDER BY likes DESC";
 $result = mysqli_query($koneksi, $query);
+
+
+// Query untuk mengambil posting berdasarkan pencarian
+$query = "SELECT p.*, u.name, u.profile_image, u.username,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like' AND created_at >= NOW() - INTERVAL 1 DAY) AS likes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike' AND created_at >= NOW() - INTERVAL 1 DAY) AS dislikes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost' AND created_at >= NOW() - INTERVAL 1 DAY) AS reposts,
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
+          FROM posts p 
+          JOIN users u ON p.user_id = u.id ";
+
+// Tambahkan kondisi WHERE untuk pencarian
+if (!empty($search_keyword)) {
+    $query .= " WHERE p.content LIKE '%" . mysqli_real_escape_string($koneksi, $search_keyword) . "%' ";
+} else {
+    $query .= " WHERE p.created_at >= NOW() - INTERVAL 1 DAY "; // Filter postingan dalam 24 jam terakhir jika tidak ada pencarian
+}
+
+$query .= " ORDER BY likes DESC";
+
+$result = mysqli_query($koneksi, $query);
+
+
+                    // Hitung waktu sejak posting
+                    $post_time = strtotime($row['created_at']);
+                    $current_time = time();
+                    $time_diff = $current_time - $post_time;
+
+                    // Tentukan format untuk menampilkan waktu
+                    if ($time_diff < 60) {
+                        $time_ago = $time_diff . " seconds ago";
+                    } elseif ($time_diff < 3600) {
+                        $minutes = floor($time_diff / 60);
+                        $time_ago = $minutes . " minute" . ($minutes > 1 ? "s" : "") . " ago";
+                    } elseif ($time_diff < 86400) {
+                        $hours = floor($time_diff / 3600);
+                        $time_ago = $hours . " hour" . ($hours > 1 ? "s" : "") . " ago";
+                    } else {
+                        $days = floor($time_diff / 86400);
+                        $time_ago = $days . " day" . ($days > 1 ? "s" : "") . " ago";
+                    }
+                    
 ?>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -85,15 +133,24 @@ $result = mysqli_query($koneksi, $query);
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
         <div class="col-md-6 feed" style="margin: 0 auto;">
+            <!-- Search bar -->
+            <form method="get" action="page.php" class="mb-3">
+                <input type="hidden" name="mod" value="trending">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search posts" style="background-color: #ecebfc"value="<?= htmlspecialchars($search_keyword) ?>">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form>
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <a href="detail_post.php?post_id=<?= $row['id'] ?>" class="btn btn-link" style="color: white; text-decoration: none;">Read more...</a>
-
+                <a href="?mod=detail_post&post_id=<?= $row['id'] ?>" class="btn btn-link" style="color: white; text-decoration: none;">Read more...</a>
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
                     <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
                         <div class="d-flex">
                             <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                             <div class="ms-3">
-                                <strong class="mb-0"><?= htmlspecialchars($row['name']) ?></strong>
+                                <strong class="mb-0"><?= htmlspecialchars($row['name']) ?></strong> <small style="color: #bbb; font-size: 12px;"><?= $time_ago ?></small>
                                 <br>
                                 <h7 style="color: #fff"><?= htmlspecialchars($row['username']) ?></h7>
                             </div>
@@ -101,27 +158,31 @@ $result = mysqli_query($koneksi, $query);
                     </a>
                     <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
                     <div class="horizontal-scroll">
-                        <?php foreach (explode(",", $row['image']) as $image): ?>
-                        <!-- Tambahkan link untuk membuka modal -->
-                        <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
-                            <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
-                        </a>
+                        <?php if (!empty($row['image'])): ?>
+            <div class="horizontal-scroll">
+                <?php foreach (explode(",", $row['image']) as $image): ?>
+                    <!-- Tambahkan link untuk membuka modal -->
+                    <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
+                        <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
+                    </a>
 
-                        <!-- Modal -->
-                        <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
-                                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-center">
-                                        <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
-                                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
                                 </div>
                             </div>
                         </div>
-                        <?php endforeach; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
                     </div>
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-actions">

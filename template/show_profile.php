@@ -230,10 +230,11 @@ if (isset($_GET['user_id'])) {
                     <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" alt="Avatar" class="avatar" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                     <div class="ms-3">
                         <h5 class="mb-0"><?= htmlspecialchars($user['name']) ?></h5>
-                                                <small style="color : #fff"><?= htmlspecialchars($user['username']) ?></small>
+                        <small style="color : #fff"><?= htmlspecialchars($user['username']) ?></small>
                     </div>
                 </div>
                 <p class="mt-3"><?= htmlspecialchars($post['content']) ?></p>
+                <?php if (!empty($post['image'])): ?>
                     <div class="horizontal-scroll">
                         <?php foreach (explode(",", $post['image']) as $image): ?>
                             <!-- Tambahkan link untuk membuka modal -->
@@ -255,8 +256,9 @@ if (isset($_GET['user_id'])) {
                                     </div>
                                 </div>
                             </div>
-                            <?php endforeach; ?>
-                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
                 <div class="d-flex justify-content-between" style="color: white;">
                     <div class="post-actions">
                             <form method="post" style="display: inline;">
@@ -278,7 +280,7 @@ if (isset($_GET['user_id'])) {
                             </form>
                             |
                             <a href="?mod=detail_post&post_id=<?= $post['id'] ?>">Comments (<?= $post['comments_count'] ?>)</a>
-                        </div>
+                    </div>
                 </div>
             </div>
             <?php endwhile; ?>

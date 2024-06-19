@@ -32,6 +32,9 @@ if ($_GET['mod']=='home'){
 } else if ($_GET['mod']=='update_profile'){
     include"template/update_profile.php";
 
+} else if ($_GET['mod']=='report'){
+    include"template/report.php";
+
 }else if ($_GET['mod']=='admin'){
     include"admin/pengguna.php";
 

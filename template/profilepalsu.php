@@ -386,7 +386,6 @@ $koneksi->close();
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
                 <div class="profile-buttons">
                     <button id="editProfileButton">Edit Profile</button>
-                    <button>Share Profile</button>
                     <form method="post">
     <button type="submit" name="logout">Logout</button>
 </form>
@@ -474,7 +473,7 @@ $koneksi->close();
 
 
     <!-- BAGIAN KONTEN USER -->
-    <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
+<div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
         <div class="col-md-6 feed" style="margin: 0 auto;">
             <?php while ($row = mysqli_fetch_assoc($result_content)): ?>
@@ -490,29 +489,19 @@ $koneksi->close();
                         </div>
                     </a>
                     <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
+                    
+                    <?php if (!empty($row['image'])): ?>
                     <div class="horizontal-scroll">
                         <?php foreach (explode(",", $row['image']) as $image): ?>
                             <!-- Tambahkan link untuk membuka modal -->
                             <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $user['id'] ?>">
                                 <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
                             </a>
-
-                            <!-- Modal -->
-                            <!-- <div class="modal fade" id="imageModal<?= $user['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="imageModalLabel<?= $user['id'] ?>">Gambar Postingan</h5>
-                                            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?> -->
+                            
+                        <?php endforeach; ?>
                     </div>
+                    <?php endif; ?>
+                    
                     <div class="d-flex justify-content-between" style="color: white;">
                     <div class="post-actions">
                             <form method="post" style="display: inline;">
@@ -541,7 +530,8 @@ $koneksi->close();
         </div>
     </div>
 </div>
-    <!-- END KONTEN USER -->
+<!-- END KONTEN USER -->
+
 
     <br>
     <nav aria-label="Page navigation example">

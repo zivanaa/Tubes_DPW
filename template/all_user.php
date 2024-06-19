@@ -65,16 +65,29 @@ $result = mysqli_query($koneksi, $query);
         align-items: center;
         margin-top: 20px;
     }
+
+    
 </style>
 
 <div class="container">
-    <h2 class="mb-4"></h2>
-    <div class="row mb-3">
-        <div class="col-md-6">
+    <div class="row mb-4 col-10 text-center"  >
+        <h7 class="mb-2">Search for ItSafe User Here:</h7>
+        <div class="input-group">
             <input type="text" id="search" class="form-control" placeholder="Search users...">
         </div>
     </div>
-    <div class="row">
+
+    <!-- <form method="get" action="page.php" class="mb-3">
+                <input type="hidden" name="mod" value="home">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search posts" value="<?= htmlspecialchars($search_keyword) ?>">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form> -->
+
+    <div class="row col-12">
         <?php while ($row = mysqli_fetch_assoc($result)): ?>
             <div class="col-12">
                 <div class="card user-card">
@@ -112,10 +125,11 @@ $result = mysqli_query($koneksi, $query);
             var users = document.querySelectorAll('.user-card');
 
             users.forEach(function(user) {
-                var userName = user.querySelector('.card-body .user-link .card-title').textContent.toLowerCase();
-                var userUsername = user.querySelector('.card-body .user-link .card-subtitle').textContent.toLowerCase();
+                var userName = user.querySelector('.user-card .card-body .user-link .card-title').textContent.toLowerCase();
+                var userUsername = user.querySelector('.user-card .card-body .user-link .card-subtitle').textContent.toLowerCase();
                 var displayStyle = (userName.includes(filter) || userUsername.includes(filter)) ? 'block' : 'none';
-                user.style.display = displayStyle;
+            user.style.display = displayStyle;
+
             });
         });
     });
