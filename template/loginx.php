@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirect based on user role
             if ($user['role'] === 'admin') {
-                header("Location: ../admin/reg_advo.php");
+                header("Location: ../page.php?mod=home");
             } else {
                 header("Location: ../page.php?mod=home");
             }

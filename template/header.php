@@ -37,6 +37,7 @@ $row = mysqli_fetch_assoc($result);
 // Ambil informasi profil pengguna
 $user_name = $row['username'];
 $user_profile_image = $row['profile_image']; // Kolom di tabel yang menyimpan path gambar profil
+$user_role = $row['role']; // Kolom di tabel yang menyimpan role pengguna
 
 // Fungsi untuk mendapatkan gambar profil dari database atau penyimpanan lainnya
 function getUserProfileImage($user_id, $koneksi) {
@@ -528,8 +529,15 @@ mysqli_close($koneksi);
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="?mod=report">Report</a>
-</li>
+                </li>
               </ul>
+              <!-- Tampilkan menu Admin jika role pengguna adalah 'admin' -->
+          <?php if ($user_role == 'admin') { ?>
+            <li>
+            <a class="nav-link" style="color : #fff" href="admin/reg_advo.php">Admin</a>
+          </li>
+          <?php } ?>
+          
             </li>
           </ul>
         </div>

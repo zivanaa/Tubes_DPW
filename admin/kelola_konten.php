@@ -355,6 +355,7 @@ if (isset($_GET['search'])) {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
+                <li><a href="../page.php?mod=home">Home</a></li>
                 <li><a href="logout.php">Logout</a></li>
             </ul>
         </aside>
