@@ -3,7 +3,7 @@ session_start();
 
 // Periksa apakah pengguna sudah login
 if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
+    header('Location: ../page.php?mod=login');
     exit();
 }
 

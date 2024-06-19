@@ -2,7 +2,7 @@
 session_start();
 // Ensure user is logged in
 if (!isset($_SESSION['username'])) {
-    header('Location: template/login.php');
+    header('Location: ?mod=login');
     exit();
 }
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
     // Hancurkan sesi
     session_destroy();
     // Redirect ke halaman login
-    header('Location: page.php?mod=login');
+    header('Location: template/introduce.php');
     exit();
 }
 
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $insert_query = "INSERT INTO post_actions (post_id, user_id, action_type) VALUES ($post_id, $user_id, '$action')";
             mysqli_query($koneksi, $insert_query);
         }
-    } 
+    }
     // Separate logic for repost
     elseif ($action == 'repost') {
         // Check if the user has already reposted
@@ -133,7 +133,7 @@ $sql_content = "SELECT p.*,
           FROM posts p
                WHERE p.user_id = ?
                ORDER BY p.created_at DESC";
-            
+
 $stmt_content = $koneksi->prepare($sql_content);
 $stmt_content->bind_param("i", $user_id); // Use bind_param with "i" for integer user_id
 $stmt_content->execute();
@@ -225,17 +225,20 @@ $koneksi->close();
             flex-grow: 1;
             width: 100%;
         }
-.profile-card {
-    width: calc(100% - 40px); /* Atur sesuai kebutuhan */
-    max-width: 656px;
-    padding: 20px;
-    background-color: #11174F;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #1193D3;
-    text-align: center;
-    color: white;
-    margin: 20px; /* Atur sesuai kebutuhan */
-}
+
+        .profile-card {
+            width: calc(100% - 40px);
+            /* Atur sesuai kebutuhan */
+            max-width: 656px;
+            padding: 20px;
+            background-color: #11174F;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #1193D3;
+            text-align: center;
+            color: white;
+            margin: 20px;
+            /* Atur sesuai kebutuhan */
+        }
 
 
         .profile-header {
@@ -299,7 +302,7 @@ $koneksi->close();
 
         .profile-username p {
             margin: 5px 0;
-            
+
         }
 
         .profile-buttons {
@@ -328,9 +331,11 @@ $koneksi->close();
             padding: 15px;
             margin-top: 20px;
             text-align: left;
-            color:#000;
-            word-wrap: break-word; /* Ensures long words break to the next line */
-            overflow-wrap: break-word; /* Ensures long words break to the next line */
+            color: #000;
+            word-wrap: break-word;
+            /* Ensures long words break to the next line */
+            overflow-wrap: break-word;
+            /* Ensures long words break to the next line */
         }
 
         .clicked {
@@ -367,37 +372,37 @@ $koneksi->close();
 <body>
     <br>
 
-   
+
     <div class="content">
-        <div class="profile-card" >
+        <div class="profile-card">
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
                 <div class="profile-username">
-                    <h4 ><?php echo htmlspecialchars($user['name']); ?></h4>
+                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
                     <h5><?php echo htmlspecialchars($user['username']); ?></h5>
                 </div>
             </div>
             <div class="profile-bio">
-            <div class="profile-stats">
-                <div>
-                <span><?php echo $posts_count; ?></span>
-                Posts
-            </div>
-            <div>
-                <span><?php echo $followers_count; ?></span>
-                Followers
-            </div>
-            <div>
-                <span><?php echo $following_count; ?></span>
-                Following
-            </div>
+                <div class="profile-stats">
+                    <div>
+                        <span><?php echo $posts_count; ?></span>
+                        Posts
+                    </div>
+                    <div>
+                        <span><?php echo $followers_count; ?></span>
+                        Followers
+                    </div>
+                    <div>
+                        <span><?php echo $following_count; ?></span>
+                        Following
+                    </div>
                 </div>
                 <p><?php echo htmlspecialchars($user['bio']); ?></p>
                 <div class="profile-buttons">
                     <button id="editProfileButton">Edit Profile</button>
                     <form method="post">
-    <button type="submit" name="logout">Logout</button>
-</form>
+                        <button type="submit" name="logout">Logout</button>
+                    </form>
 
                 </div>
             </div>
@@ -407,199 +412,199 @@ $koneksi->close();
             </div>
         </div>
 
-<!-- Modal for editing profile -->
-<div id="editProfileModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Edit Profile</h2>
-        <form action="?mod=update_profile" method="post" enctype="multipart/form-data">
-            <!-- Pratinjau Gambar Profil -->
-            <div class="form-group">
-                <label for="profileImageUpload">Profile Image:</label>
-                <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
-                <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
-            </div>
-            <div class="form-group">
-                <label for="profileName">Name:</label>
-                <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="profileUsername">Username:</label>
-                <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
-            </div>
-            <div class="form-group">
-                <label for="profileBio">Bio:</label>
-                <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
-            </div>
-            <div class="form-group">
-                <label for="profileDashboard">Dashboard:</label>
-                <input type="text" id="profileDashboard" name="profileDashboard" value="<?php echo htmlspecialchars($user['dashboard']); ?>">
-            </div>
-            <button type="submit">Save Changes</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    var modal = document.getElementById('editProfileModal');
-    var editProfileButton = document.getElementById('editProfileButton');
-    var closeSpan = document.getElementsByClassName('close')[0];
-
-    editProfileButton.onclick = function () {
-        modal.style.display = 'block';
-        // Menampilkan foto profil yang sudah diunggah saat modal dibuka
-        var profileImage = '<?php echo htmlspecialchars($user["profile_image"]); ?>';
-        previewImage.src = profileImage;
-    }
-
-    closeSpan.onclick = function () {
-        modal.style.display = 'none';
-    }
-
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    }
-
-    // Fungsi untuk pratinjau gambar profil sebelum diunggah
-    var profileImageUpload = document.getElementById('profileImageUpload');
-    var previewImage = document.getElementById('previewImage');
-
-    profileImageUpload.onchange = function (e) {
-        var file = e.target.files[0];
-        var reader = new FileReader();
-
-        reader.onload = function () {
-            previewImage.src = reader.result;
-        }
-
-        reader.readAsDataURL(file);
-    }
-</script>
-
-
-    <!-- BAGIAN KONTEN USER -->
-<div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
-    <div class="row" style="width: 100%; max-width: 2500px;">
-        <div class="col-md-6 feed" style="margin: 0 auto;">
-            <?php while ($row = mysqli_fetch_assoc($result_content)): ?>
-                <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
-                    <?php if ($row['user_id'] == $_SESSION['user_id']): ?>
-    <a href="?mod=profile" style="color: white; text-decoration: none;">
-<?php else: ?>
-    <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
-<?php endif; ?>
-
-                        <div class="d-flex">
-                            <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
-                            <div class="ms-3">
-                                <strong class="mb-0"><?= htmlspecialchars($user['name']) ?></strong>
-                                <br>
-                                <h7 style="color: #fff"><?= htmlspecialchars($user['username']) ?></h7>
-                            </div>
-                        </div>
-                    </a>
-                    <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
-                    
-                    <?php if (!empty($row['image'])): ?>
-                    <div class="horizontal-scroll">
-                        <?php foreach (explode(",", $row['image']) as $image): ?>
-                            <!-- Tambahkan link untuk membuka modal -->
-                            <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $user['id'] ?>">
-                                <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
-                            </a>
-                            
-                        <?php endforeach; ?>
+        <!-- Modal for editing profile -->
+        <div id="editProfileModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Edit Profile</h2>
+                <form action="?mod=update_profile" method="post" enctype="multipart/form-data">
+                    <!-- Pratinjau Gambar Profil -->
+                    <div class="form-group">
+                        <label for="profileImageUpload">Profile Image:</label>
+                        <img id="previewImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image Preview">
+                        <input type="file" id="profileImageUpload" name="profileImageUpload" accept="image/*">
                     </div>
-                    <?php endif; ?>
-                    
-                    
-                    <div class="d-flex justify-content-between" style="color: white;">
-                        <div class="post-actions">
-                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
-                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                                <input type="hidden" name="action" value="like">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
-                                    <?php if ($row['user_action'] == 'like'): ?>
-                                        <i class="fas fa-thumbs-up"></i>
-                                    <?php else: ?>
-                                        <i class="far fa-thumbs-up"></i>
-                                    <?php endif; ?>
-                                    (<?= $row['likes'] ?>)
-                                </button>
-                            </form>
-                            |
-                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
-                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                                <input type="hidden" name="action" value="dislike">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
-                                    <?php if ($row['user_action'] == 'dislike'): ?>
-                                        <i class="fas fa-thumbs-down"></i>
-                                    <?php else: ?>
-                                        <i class="far fa-thumbs-down"></i>
-                                    <?php endif; ?>
-                                    (<?= $row['dislikes'] ?>)
-                                </button>
-                            </form>
-                            |            
-                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
-                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                                <input type="hidden" name="action" value="repost">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
-                                    <?php if ($row['user_action'] == 'repost'): ?>
-                                        <i class="fas fa-retweet"></i>
-                                    <?php else: ?>
-                                        <i class="fas fa-retweet"></i>
-                                    <?php endif; ?>
-                                    (<?= $row['reposts'] ?>)
-                                </button>
-                            </form>
-                            |
-                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $row['id'] ?>"><i class="far fa-comments"></i> (<?= $row['comments_count'] ?>)</a>
-                        </div>
+                    <div class="form-group">
+                        <label for="profileName">Name:</label>
+                        <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user['name']); ?>" required>
                     </div>
-                </div>
-            <?php endwhile; ?>
+                    <div class="form-group">
+                        <label for="profileUsername">Username:</label>
+                        <input type="text" id="profileUsername" name="profileUsername" value="<?php echo htmlspecialchars($user['username']); ?>" required oninput="validateUsername()">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileBio">Bio:</label>
+                        <input type="text" id="profileBio" name="profileBio" value="<?php echo htmlspecialchars($user['bio']); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileDashboard">Dashboard:</label>
+                        <input type="text" id="profileDashboard" name="profileDashboard" value="<?php echo htmlspecialchars($user['dashboard']); ?>">
+                    </div>
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
         </div>
-    </div>
-</div>
-<!-- END KONTEN USER -->
+
+        <script>
+            var modal = document.getElementById('editProfileModal');
+            var editProfileButton = document.getElementById('editProfileButton');
+            var closeSpan = document.getElementsByClassName('close')[0];
+
+            editProfileButton.onclick = function() {
+                modal.style.display = 'block';
+                // Menampilkan foto profil yang sudah diunggah saat modal dibuka
+                var profileImage = '<?php echo htmlspecialchars($user["profile_image"]); ?>';
+                previewImage.src = profileImage;
+            }
+
+            closeSpan.onclick = function() {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // Fungsi untuk pratinjau gambar profil sebelum diunggah
+            var profileImageUpload = document.getElementById('profileImageUpload');
+            var previewImage = document.getElementById('previewImage');
+
+            profileImageUpload.onchange = function(e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+
+                reader.onload = function() {
+                    previewImage.src = reader.result;
+                }
+
+                reader.readAsDataURL(file);
+            }
+        </script>
 
 
-    <br>
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
+        <!-- BAGIAN KONTEN USER -->
+        <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
+            <div class="row" style="width: 100%; max-width: 2500px;">
+                <div class="col-md-6 feed" style="margin: 0 auto;">
+                    <?php while ($row = mysqli_fetch_assoc($result_content)) : ?>
+                        <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
+                            <?php if ($row['user_id'] == $_SESSION['user_id']) : ?>
+                                <a href="?mod=profile" style="color: white; text-decoration: none;">
+                                <?php else : ?>
+                                    <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
+                                    <?php endif; ?>
 
-    <script>
-    // Function untuk memfilter input pada field username
-    function filterUsernameInput() {
-        var usernameInput = document.getElementById('profileUsername');
-        var currentValue = usernameInput.value;
+                                    <div class="d-flex">
+                                        <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
+                                        <div class="ms-3">
+                                            <strong class="mb-0"><?= htmlspecialchars($user['name']) ?></strong>
+                                            <br>
+                                            <h7 style="color: #fff"><?= htmlspecialchars($user['username']) ?></h7>
+                                        </div>
+                                    </div>
+                                    </a>
+                                    <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
 
-        // Pastikan "@" tetap ada di awal input
-        if (!currentValue.startsWith('@')) {
-            usernameInput.value = '@' + currentValue;
-        }
-    }
+                                    <?php if (!empty($row['image'])) : ?>
+                                        <div class="horizontal-scroll">
+                                            <?php foreach (explode(",", $row['image']) as $image) : ?>
+                                                <!-- Tambahkan link untuk membuka modal -->
+                                                <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $user['id'] ?>">
+                                                    <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
+                                                </a>
 
-    // Event listener untuk memanggil fungsi filter saat input berubah
-    document.addEventListener('DOMContentLoaded', function () {
-        var usernameInput = document.getElementById('profileUsername');
-        usernameInput.addEventListener('input', filterUsernameInput);
-    });
-</script>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+
+
+                                    <div class="d-flex justify-content-between" style="color: white;">
+                                        <div class="post-actions">
+                                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                                <input type="hidden" name="action" value="like">
+                                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                                    <?php if ($row['user_action'] == 'like') : ?>
+                                                        <i class="fas fa-thumbs-up"></i>
+                                                    <?php else : ?>
+                                                        <i class="far fa-thumbs-up"></i>
+                                                    <?php endif; ?>
+                                                    (<?= $row['likes'] ?>)
+                                                </button>
+                                            </form>
+                                            |
+                                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                                <input type="hidden" name="action" value="dislike">
+                                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                                    <?php if ($row['user_action'] == 'dislike') : ?>
+                                                        <i class="fas fa-thumbs-down"></i>
+                                                    <?php else : ?>
+                                                        <i class="far fa-thumbs-down"></i>
+                                                    <?php endif; ?>
+                                                    (<?= $row['dislikes'] ?>)
+                                                </button>
+                                            </form>
+                                            |
+                                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                                <input type="hidden" name="action" value="repost">
+                                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                                    <?php if ($row['user_action'] == 'repost') : ?>
+                                                        <i class="fas fa-retweet"></i>
+                                                    <?php else : ?>
+                                                        <i class="fas fa-retweet"></i>
+                                                    <?php endif; ?>
+                                                    (<?= $row['reposts'] ?>)
+                                                </button>
+                                            </form>
+                                            |
+                                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $row['id'] ?>"><i class="far fa-comments"></i> (<?= $row['comments_count'] ?>)</a>
+                                        </div>
+                                    </div>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+            </div>
+        </div>
+        <!-- END KONTEN USER -->
+
+
+        <br>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+        <script>
+            // Function untuk memfilter input pada field username
+            function filterUsernameInput() {
+                var usernameInput = document.getElementById('profileUsername');
+                var currentValue = usernameInput.value;
+
+                // Pastikan "@" tetap ada di awal input
+                if (!currentValue.startsWith('@')) {
+                    usernameInput.value = '@' + currentValue;
+                }
+            }
+
+            // Event listener untuk memanggil fungsi filter saat input berubah
+            document.addEventListener('DOMContentLoaded', function() {
+                var usernameInput = document.getElementById('profileUsername');
+                usernameInput.addEventListener('input', filterUsernameInput);
+            });
+        </script>
 
 
 
@@ -609,23 +614,23 @@ $koneksi->close();
 
 
 <style>
-.horizontal-scroll {
-    overflow-x: auto;
-    white-space: nowrap;
-    margin-top: 10px;
-    padding-bottom: 10px;
-}
+    .horizontal-scroll {
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-top: 10px;
+        padding-bottom: 10px;
+    }
 
-.horizontal-scroll::-webkit-scrollbar {
-    display: none;
-}
+    .horizontal-scroll::-webkit-scrollbar {
+        display: none;
+    }
 
-.horizontal-image {
-    max-height: 250px;
-    max-width: 75%;
-    border-radius: 5px;
-    margin-right: 10px;
-    display: inline-block;
-}
+    .horizontal-image {
+        max-height: 250px;
+        max-width: 75%;
+        border-radius: 5px;
+        margin-right: 10px;
+        display: inline-block;
+    }
 </style>
-<?php include "footer.php";?>
+<?php include "footer.php"; ?>

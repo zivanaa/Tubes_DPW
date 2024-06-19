@@ -102,7 +102,7 @@
                     <h3>Fauzan Rofif Ardiyanto</h3>
                 </div>
                 <div class="col-md-4 team-item">
-                    <img style="width  : 250px; height:auto" src="../assets/img/tmo.png" alt="Team Member 4">
+                    <img style="width  : 120px; height:auto" src="../assets/img/candra.png" alt="Team Member 4">
                     <h3>Dwi Candra Pratama</h3>
                 </div>
                 <div class="col-md-4 team-item">
