@@ -1,5 +1,4 @@
 <?php
 
-header('location:page.php?mod=registrasi_user')
-
+header('location:template/introduce.php')
 ?>
