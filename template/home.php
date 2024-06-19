@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 include "header.php";
 
-// Koneksi ke database
+// Connect to the database
 $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
 
 if (mysqli_connect_errno()) {
@@ -75,25 +75,8 @@ $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
-                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
-          FROM posts p 
-          JOIN users u ON p.user_id = u.id";
-
-if (!empty($search_keyword)) {
-    $query .= " WHERE p.content LIKE '%$search_keyword%'";
-}
-
-// Fetch posts from the database with search functionality
-$search_keyword = '';
-if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['search'])) {
-    $search_keyword = mysqli_real_escape_string($koneksi, $_GET['search']);
-}
-
-$query = "SELECT p.*, u.name, u.profile_image, u.username,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
-                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count,
+                 (SELECT action_type FROM post_actions WHERE post_id = p.id AND user_id = " . $_SESSION['user_id'] . " LIMIT 1) AS user_action
           FROM posts p 
           JOIN users u ON p.user_id = u.id";
 
@@ -113,6 +96,7 @@ if (!$result) {
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
@@ -128,72 +112,96 @@ if (!$result) {
                 </div>
             </form>
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
-    <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
-        <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
-            <div class="d-flex">
-                <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
-                <div class="ms-3">
-                    <strong class="mb-0"><?= htmlspecialchars($row['name']) ?></strong> 
-                    <br>
-                    <h7 style="color: #fff"><?= htmlspecialchars($row['username']) ?></h7>
-                </div>
-            </div>
-        </a>
-        <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
+                <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
+                    <?php if ($row['user_id'] == $_SESSION['user_id']): ?>
+                        <a href="?mod=profile" style="color: white; text-decoration: none;">
+                    <?php else: ?>
+                        <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
+                    <?php endif; ?>
 
-        <?php if (!empty($row['image'])): ?>
-            <div class="horizontal-scroll">
-                <?php foreach (explode(",", $row['image']) as $image): ?>
-                    <!-- Tambahkan link untuk membuka modal -->
-                    <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
-                        <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
-                    </a>
-
-                    <!-- Modal -->
-                    <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
-                                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
-                                </div>
-                            </div>
+                    <div class="d-flex">
+                        <img src="<?= !empty($row['profile_image']) ? htmlspecialchars($row['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
+                        <div class="ms-3">
+                            <strong class="mb-0"><?= htmlspecialchars($row['name']) ?></strong>
+                            <br>
+                            <h7 style="color: #fff"><?= htmlspecialchars($row['username']) ?></h7>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                    </a>
+                    <p class="mt-3"><?= htmlspecialchars($row['content']) ?></p>
 
-        <div class="d-flex justify-content-between" style="color: white;">
-            <div class="post-actions">
-                <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px">
-                    <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                    <input type="hidden" name="action" value="like">
-                    <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Like (<?= $row['likes'] ?>)</button>
-                </form>
-                |
-                <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px">
-                    <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                    <input type="hidden" name="action" value="dislike">
-                    <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Dislike (<?= $row['dislikes'] ?>)</button>
-                </form>
-                |
-                <form method="post" style="display: inline; margin-left: 30px; margin-right: 30px">
-                    <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
-                    <input type="hidden" name="action" value="repost">
-                    <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Repost (<?= $row['reposts'] ?>)</button>
-                </form>
-                |
-                <a style="display: inline; margin-left: 30px; margin-right: 30px" href="?mod=detail_post&post_id=<?= $row['id'] ?>">Comments (<?= $row['comments_count'] ?>)</a>
-            </div>
-        </div>
-    </div>
-<?php endwhile; ?>
+                    <?php if (!empty($row['image'])): ?>
+                        <div class="horizontal-scroll">
+                            <?php foreach (explode(",", $row['image']) as $image): ?>
+                                <!-- Tambahkan link untuk membuka modal -->
+                                <a href="#" class="open-modal" data-toggle="modal" data-target="#imageModal<?= $row['id'] ?>">
+                                    <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Post Image" class="horizontal-image">
+                                </a>
 
-                    
+                                <!-- Modal -->
+                                <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-labelledby="imageModalLabel<?= $row['id'] ?>" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="imageModalLabel<?= $row['id'] ?>">Gambar Postingan</h5>
+                                                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img src="assets/konten/<?= htmlspecialchars($image) ?>" alt="Full Image" style="max-width: 100%; max-height: 80vh;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="d-flex justify-content-between" style="color: white;">
+                        <div class="post-actions">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                <input type="hidden" name="action" value="like">
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'like'): ?>
+                                        <i class="fas fa-thumbs-up"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-up"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['likes'] ?>)
+                                </button>
+                            </form>
+                            |
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                <input type="hidden" name="action" value="dislike">
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'dislike'): ?>
+                                        <i class="fas fa-thumbs-down"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-down"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['dislikes'] ?>)
+                                </button>
+                            </form>
+                            |            
+                            <form method="post" style="display: inline;margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
+                                <input type="hidden" name="action" value="repost">
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'repost'): ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['reposts'] ?>)
+                                </button>
+                            </form>
+                            |
+                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $row['id'] ?>"><i class="far fa-comments"></i> (<?= $row['comments_count'] ?>)</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
         </div>
     </div>
 </div>
