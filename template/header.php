@@ -72,7 +72,7 @@ mysqli_close($koneksi);
   <script src="assets/css/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
   <script src="assets/css/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-
+ 
   <style>
     .sidebar {
             width: 30%;
@@ -464,6 +464,7 @@ mysqli_close($koneksi);
     text-align: center;
   }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 
 <body>
@@ -474,8 +475,7 @@ mysqli_close($koneksi);
             <div class="row align-items-center">
                 <div class="col">
                     <a href="?mod=home"> <!-- Tambahkan link ke halaman home di sini -->
-                        <img src="assets/img/images.png" style="height: 90px;">
-                        <span style="font-size: 28px; font-weight: bold; color: #fff;">IT SAFE</span>
+                        <img src="assets/img/imagesheader.png" style="height: 90px;">
                     </a>
                 </div>
                 <div class="col text-right">
@@ -494,7 +494,8 @@ mysqli_close($koneksi);
     <!---header finish--->
     <!---nav star--->
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #1974CF;">
-  <a class="navbar-brand" href="#"></a>
+<a class="navbar-brand" style="color : #fff"  href="?mod=home" ><i class="fas fa-house"></i></a>
+
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>

@@ -18,6 +18,21 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
+
+$user_id = $_SESSION['user_id'];
+
+$contacts_query = "SELECT id, name, profile_image FROM users WHERE id != ?";
+$stmt = $koneksi->prepare($contacts_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$contacts_result = $stmt->get_result();
+
+$contacts = [];
+while ($row = $contacts_result->fetch_assoc()) {
+    $contacts[] = $row;
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['follow_action'])) {
     $action_user_id = $_POST['action_user_id'];
     $follow_action = $_POST['follow_action'];
@@ -101,11 +116,12 @@ if (isset($_GET['user_id'])) {
 
     // Fetch user's posts
     $posts_query = "SELECT p.*, u.name, u.profile_image, u.username,
-                       (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
-                       (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
-                       (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
-                       (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
-                   FROM posts p 
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count,
+                 (SELECT action_type FROM post_actions WHERE post_id = p.id AND user_id = " . $_SESSION['user_id'] . " LIMIT 1) AS user_action
+          FROM posts p 
                    JOIN users u ON p.user_id = u.id 
                    WHERE p.user_id = $profile_user_id
                    ORDER BY p.created_at DESC";
@@ -140,19 +156,102 @@ if (isset($_GET['user_id'])) {
         margin-top: 20px;
         text-align: left;
   }
-  .profile-stats {
-        display: flex;
-        justify-content: space-around;
-        margin: 20px 0;
-  }
-  .profile-stats div {
-        text-align: center;
-  }
-  .profile-stats div span {
-        display: block;
-        font-size: 18px;
-        font-weight: bold;
-  }
+  .profile-card {
+    width: calc(100% - 40px); /* Atur sesuai kebutuhan */
+    max-width: 656px;
+    padding: 20px;
+    background-color: #11174F;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #1193D3;
+    text-align: center;
+    color: white;
+    margin: 20px; /* Atur sesuai kebutuhan */
+}
+
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-header img {
+            border-radius: 50%;
+            position: center;
+            width: 80px;
+            height: 80px;
+        }
+
+        .profile-header div {
+            flex-grow: 1;
+            margin-left: 10px;
+            text-align: left;
+        }
+
+        .profile-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .profile-stats div {
+            text-align: center;
+        }
+
+        .profile-stats div span {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .profile-bio {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .profile-bio p {
+            margin: 5px 0;
+        }
+
+        .profile-username {
+            border-radius: 5px;
+            padding: 5px;
+            margin-top: 20px;
+            text-align: left;
+            font-style: bold;
+            margin: 20px 0;
+        }
+
+        .profile-username p {
+            margin: 5px 0;
+            
+        }
+
+        .profile-buttons {
+            display: flex;
+            color: #1193D3;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .profile-buttons button {
+            background-color: #1193D3;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .profile-buttons button:hover {
+            background-color: #555;
+        }
   .avatar {
         width: 100px;
         height: 100px;
@@ -160,11 +259,21 @@ if (isset($_GET['user_id'])) {
   }
 </style>
 
-<div class="profile">
-    <div class="user-info">
-        <p style="text-align: center; font-size: 25px; background-color: #BBD4E0 ; color : #0C0C0C ; border-radius: 5px; padding: 5px; margin-bottom: 20px; "><?= htmlspecialchars($user['username']) ?></p>
-        <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" alt="Avatar" class="avatar">
-        <div>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+<div class="container d-flex justify-content-center align-items-centerontainer"  >
+<div class="profile-card " >
+    <div class="profile-header">
+                <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
+                <div class="profile-username">
+                    <h4 ><?php echo htmlspecialchars($user['name']); ?></h4>
+                    <h5><?php echo htmlspecialchars($user['username']); ?></h5>
+                </div>
+            </div>
+            <div class="profile-bio">
             <div class="profile-stats">
                 <div>
                     <span><?= $posts_count ?></span>
@@ -191,19 +300,21 @@ if (isset($_GET['user_id'])) {
             $is_following = mysqli_num_rows($is_following_result) > 0;
             ?>
 
+<div class="profile-buttons" >
             <form method="post" style="display:inline;">
                 <input type="hidden" name="action_user_id" value="<?= $profile_user_id ?>">
                 <input type="hidden" name="follow_action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
-                <button type="submit" style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px; margin-left: 110px;">
+                <button type="submit" style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px;">
                     <?= $is_following ? 'Unfollow' : 'Follow' ?>
                 </button>
             </form>
-            
-                <a href="?mod=chat&user_id=<?= $user_id ?>">
-                    <button style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px; margin-left: 100px">
+                <a href="?mod=chat&contact_id=<?= $user['id'] ?>">
+                    <button style="background-color: #87CEFA; color: #11174F; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 14px;">
                         Message
                     </button>
                 </a>
+        </div>
+                
             <h4><?= htmlspecialchars($user['name']) ?></h4>
             <div class="profile-bio">
                 <p><?= htmlspecialchars($user['bio']) ?></p>
@@ -217,9 +328,12 @@ if (isset($_GET['user_id'])) {
         </div>
         <br>
     </div>
-    <div style="clear: both;"></div>
+        </div>
+    <div style="text-align: center;">
     <h3>Posts:</h3>        
 </div>
+
+        
 
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
@@ -259,30 +373,52 @@ if (isset($_GET['user_id'])) {
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <div class="d-flex justify-content-between" style="color: white;">
-                    <div class="post-actions">
-                            <form method="post" style="display: inline;">
+                
+                    <div class="d-flex justify-content-between" style="color: white;">
+                        <div class="post-actions">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="like">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Like (<?= $post['likes'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'like'): ?>
+                                        <i class="fas fa-thumbs-up"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-up"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['likes'] ?>)
+                                </button>
                             </form>
                             |
-                            <form method="post" style="display: inline;">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="dislike">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Dislike (<?= $post['dislikes'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'dislike'): ?>
+                                        <i class="fas fa-thumbs-down"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-down"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['dislikes'] ?>)
+                                </button>
                             </form>
-                            |
-                            <form method="post" style="display: inline;">
+                            |            
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="repost">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Repost (<?= $post['reposts'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'repost'): ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['reposts'] ?>)
+                                </button>
                             </form>
                             |
-                            <a href="?mod=detail_post&post_id=<?= $post['id'] ?>">Comments (<?= $post['comments_count'] ?>)</a>
+                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $post['id'] ?>"><i class="far fa-comments"></i> (<?= $post['comments_count'] ?>)</a>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php endwhile; ?>
         </div>
     </div>

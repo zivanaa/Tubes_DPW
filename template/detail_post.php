@@ -81,10 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['comment'])) {
 $query = "SELECT p.*, u.name, u.profile_image, u.username,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
                  (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
-                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts
-          FROM posts p 
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count,
+                 (SELECT action_type FROM post_actions WHERE post_id = p.id AND user_id = " . $_SESSION['user_id'] . " LIMIT 1) AS user_action
+          FROM posts p
           JOIN users u ON p.user_id = u.id 
           WHERE p.id = ?";
+          
 $stmt = mysqli_prepare($koneksi, $query);
 mysqli_stmt_bind_param($stmt, 'i', $post_id);
 mysqli_stmt_execute($stmt);
@@ -110,13 +113,19 @@ $comments_result = mysqli_stmt_get_result($stmt);
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
 
 <div class="container-fluid" style="margin-top: 15px; display: flex; justify-content: center;">
     <div class="row" style="width: 100%; max-width: 2500px;">
         <div class="col-md-8 offset-md-2">
             <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
-                <a href="?mod=show_profile&user_id=<?= htmlspecialchars($post['user_id']) ?>" style="color: white; text-decoration: none;">
-                    <div class="d-flex">
+                <?php if ($post['user_id'] == $_SESSION['user_id']): ?>
+                    <a href="?mod=profile" style="color: white; text-decoration: none;">
+                <?php else: ?>
+                    <a href="?mod=show_profile&user_id=<?= htmlspecialchars($post['user_id']) ?>" style="color: white; text-decoration: none;">
+                <?php endif; ?>
+                <div class="d-flex">
                         <img src="<?= !empty($post['profile_image']) ? htmlspecialchars($post['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                         <div class="ms-3">
                             <strong class="mb-0"><?= htmlspecialchars($post['name']) ?></strong>
@@ -153,44 +162,72 @@ $comments_result = mysqli_stmt_get_result($stmt);
                 <div class="d-flex justify-content-between" style="color: white;">
                     <div class="d-flex justify-content-between" style="color: white;">
                         <div class="post-actions">
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="post_id" value="<?= htmlspecialchars($post['id']) ?>">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="like">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Like (<?= htmlspecialchars($post['likes']) ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'like'): ?>
+                                        <i class="fas fa-thumbs-up"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-up"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['likes'] ?>)
+                                </button>
                             </form>
                             |
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="post_id" value="<?= htmlspecialchars($post['id']) ?>">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="dislike">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Dislike (<?= htmlspecialchars($post['dislikes']) ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'dislike'): ?>
+                                        <i class="fas fa-thumbs-down"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-down"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['dislikes'] ?>)
+                                </button>
                             </form>
-                            |
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="post_id" value="<?= htmlspecialchars($post['id']) ?>">
+                            |            
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                                 <input type="hidden" name="action" value="repost">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Repost (<?= htmlspecialchars($post['reposts']) ?>) </button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($post['user_action'] == 'repost'): ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php endif; ?>
+                                    (<?= $post['reposts'] ?>)
+                                </button>
                             </form>
                             |
-                            
+                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $post['id'] ?>"><i class="far fa-comments"></i> (<?= $post['comments_count'] ?>)</a>
+                       
                         </div>
                     </div>
                 </div>
             </div>
             <h4 class="mt-5" style="color: black;">Comments</h4>
-            <?php while ($comment = mysqli_fetch_assoc($comments_result)): ?>
-                <div class="comment mb-3" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #11174F; color: white;">
-                    <div class="d-flex">
-                        <img src="<?= !empty($comment['profile_image']) ? htmlspecialchars($comment['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 40px; height: 40px;">
-                        <div class="ms-3">
-                            <strong class="mb-0"><?= htmlspecialchars($comment['name']) ?></strong>
-                            <br>
-                            <h7 style="color: #fff"><?= htmlspecialchars($comment['username']) ?></h7>
-                        </div>
-                    </div>
-                    <p class="mt-3"><?= htmlspecialchars($comment['comment']) ?></p>
-                    <span class="text-muted" style="font-size: 0.8em;"><?= htmlspecialchars($comment['created_at']) ?></span>
+<?php while ($comment = mysqli_fetch_assoc($comments_result)): ?>
+    <div class="comment mb-3" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #11174F; color: white;">
+        <?php if ($comment['user_id'] == $_SESSION['user_id']): ?>
+            <a href="?mod=profile" style="color: white; text-decoration: none;">
+        <?php else: ?>
+            <a href="?mod=show_profile&user_id=<?= htmlspecialchars($comment['user_id']) ?>" style="color: white; text-decoration: none;">
+        <?php endif; ?>
+            <div class="d-flex">
+                <img src="<?= !empty($comment['profile_image']) ? htmlspecialchars($comment['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 40px; height: 40px;">
+                <div class="ms-3">
+                    <strong class="mb-0"><?= htmlspecialchars($comment['name']) ?></strong>
+                    <br>
+                    <h7 style="color: #fff"><?= htmlspecialchars($comment['username']) ?></h7>
                 </div>
-            <?php endwhile; ?>
+            </div>
+            <p class="mt-3"><?= htmlspecialchars($comment['comment']) ?></p>
+            <span class="text-muted" style="font-size: 0.8em;"><?= htmlspecialchars($comment['created_at']) ?></span>
+        </a>
+    </div>
+<?php endwhile; ?>
 
             <form method="post" class="mt-4">
                 <div class="form-group">

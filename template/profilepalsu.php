@@ -125,11 +125,12 @@ $stmt_following_count->close();
 
 // Query untuk mendapatkan konten pengguna berdasarkan user_id
 $sql_content = "SELECT p.*, 
-                      (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
-                      (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
-                      (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
-                      (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count
-               FROM posts p 
+                    (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'like') AS likes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'dislike') AS dislikes,
+                 (SELECT COUNT(*) FROM post_actions WHERE post_id = p.id AND action_type = 'repost') AS reposts,
+                 (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comments_count,
+                 (SELECT action_type FROM post_actions WHERE post_id = p.id AND user_id = " . $_SESSION['user_id'] . " LIMIT 1) AS user_action
+          FROM posts p
                WHERE p.user_id = ?
                ORDER BY p.created_at DESC";
             
@@ -147,6 +148,8 @@ $koneksi->close();
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -482,7 +485,12 @@ $koneksi->close();
         <div class="col-md-6 feed" style="margin: 0 auto;">
             <?php while ($row = mysqli_fetch_assoc($result_content)): ?>
                 <div class="post" style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; background-color: #11174F; color: white; margin-bottom: 15px;">
-                    <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
+                    <?php if ($row['user_id'] == $_SESSION['user_id']): ?>
+    <a href="?mod=profile" style="color: white; text-decoration: none;">
+<?php else: ?>
+    <a href="?mod=show_profile&user_id=<?= htmlspecialchars($row['user_id']) ?>" style="color: white; text-decoration: none;">
+<?php endif; ?>
+
                         <div class="d-flex">
                             <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/profile/none.png' ?>" class="rounded-circle" alt="User Image" style="width: 50px; height: 50px;">
                             <div class="ms-3">
@@ -506,30 +514,52 @@ $koneksi->close();
                     </div>
                     <?php endif; ?>
                     
+                    
                     <div class="d-flex justify-content-between" style="color: white;">
-                    <div class="post-actions">
-                            <form method="post" style="display: inline;">
+                        <div class="post-actions">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="like">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Like (<?= $row['likes'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'like'): ?>
+                                        <i class="fas fa-thumbs-up"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-up"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['likes'] ?>)
+                                </button>
                             </form>
                             |
-                            <form method="post" style="display: inline;">
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="dislike">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Dislike (<?= $row['dislikes'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'dislike'): ?>
+                                        <i class="fas fa-thumbs-down"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-thumbs-down"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['dislikes'] ?>)
+                                </button>
                             </form>
-                            |
-                            <form method="post" style="display: inline;">
+                            |            
+                            <form method="post" style="display: inline; margin-left: 5px; margin-right: 5px">
                                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                                 <input type="hidden" name="action" value="repost">
-                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">Repost (<?= $row['reposts'] ?>)</button>
+                                <button type="submit" class="btn btn-link" style="color: white; text-decoration: none;">
+                                    <?php if ($row['user_action'] == 'repost'): ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-retweet"></i>
+                                    <?php endif; ?>
+                                    (<?= $row['reposts'] ?>)
+                                </button>
                             </form>
                             |
-                            <a href="?mod=detail_post&post_id=<?= $row['id'] ?>">Comments (<?= $row['comments_count'] ?>)</a>
+                            <a style="display: inline; margin-left: 5px; margin-right: 5px" href="?mod=detail_post&post_id=<?= $row['id'] ?>"><i class="far fa-comments"></i> (<?= $row['comments_count'] ?>)</a>
                         </div>
+                    </div>
                 </div>
-            </div>
             <?php endwhile; ?>
         </div>
     </div>
