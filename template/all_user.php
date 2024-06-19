@@ -71,7 +71,7 @@ $result = mysqli_query($koneksi, $query);
 
 <div class="container">
     <div class="row mb-4 col-10 text-center"  >
-        <h7 class="mb-2">Search for ItSafe User Here:</h7>
+        <h7 class="mb-2">Search for ItSafe Here:</h7>
         <div class="input-group">
             <input type="text" id="search" class="form-control" placeholder="Search users...">
         </div>

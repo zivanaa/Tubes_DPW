@@ -104,7 +104,8 @@ mysqli_close($koneksi);
 ?>
 
 <?php include "header.php"; ?>
-
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <!-- report.php -->
 <!DOCTYPE html>
 <html lang="en">
@@ -113,7 +114,6 @@ mysqli_close($koneksi);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Laporan</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .custom-container {
             max-width: 600px; /* Atur lebar maksimum container */
@@ -150,8 +150,8 @@ mysqli_close($koneksi);
         </form>
     </div>
 
-    <!-- Bootstrap JS (untuk tombol close pada notifikasi) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS (untuk tombol close pada notifikasi)
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script> -->
 </body>
 </html>
 

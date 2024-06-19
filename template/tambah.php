@@ -7,36 +7,43 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<div class="profile">
-    <h2>Upload Konten</h2>
-    <br>
-    <form action="template/upload.php" method="post" enctype="multipart/form-data" onsubmit="return handleFormSubmit(event)">
-        <label for="tweet-text">Tweet:</label>
-        <br>
-        <textarea id="tweet-text" name="tweet-text" rows="4" placeholder="What's happening?" required></textarea>
-        <br>
-        <label for="upload-images">Upload Images:</label>
-        <br>
-        <input type="file" id="upload-images" name="upload-images[]" accept="image/*" multiple onchange="previewImages()">
-        <br>
-        <div id="preview-container" class="preview-container"></div>
-        <button type="submit" style="width: 610px">Tweet</button>
-        <br>
-    </form>
-</div>
-
-<!-- Notification Popup -->
-<div id="notification" class="notification" style="display: none;">
-    <span id="notification-message"></span>
-    <button onclick="closeNotification()" style="background: none;">x</button>
-    <br>
-    <div class="notification-buttons">
-     <a class="home-button" href="?mod=home" style="text-decoration: none;">Go to Home</a>
+<div class="container" >
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5" style="background-color: #11174F;">
+                <div class="card-header">
+                    <h2>Upload Konten</h2>
+                </div>
+                <div class="card-body">
+                    <form action="template/upload.php" method="post" enctype="multipart/form-data" onsubmit="return handleFormSubmit(event)">
+                        <div class="form-group">
+                            <label for="tweet-text">Tweet:</label>
+                            <textarea class="form-control" id="tweet-text" name="tweet-text" rows="4" placeholder="What's happening?" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="upload-images">Upload Images:</label>
+                            <input type="file" class="form-control-file" id="upload-images" name="upload-images[]" accept="image/*" multiple onchange="previewImages()">
+                        </div>
+                        <div id="preview-container" class="preview-container"></div>
+                        <button type="submit" class="btn btn-primary btn-block">Tweet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-
+<!-- Notification Popup -->
+<div id="notification" class="notification">
+    <span id="notification-message"></span>
+    <button onclick="closeNotification()" class="close-btn">x</button>
+    <div class="notification-buttons">
+        <a class="home-button" href="?mod=home">Go to Home</a>
+    </div>
+</div>
 
 <?php include "footer.php"; ?>
 
@@ -82,7 +89,7 @@ function previewImages() {
                 return function (e) {
                     var div = document.createElement('div');
                     div.className = 'image-preview';
-                    div.innerHTML = '<img src="' + e.target.result + '" style="width: 100px; height: 100px; margin: 5px;"><button class="remove-btn" data-index="' + index + '">x</button>';
+                    div.innerHTML = '<img src="' + e.target.result + '" class="img-thumbnail"><button class="remove-btn" data-index="' + index + '">x</button>';
                     previewContainer.appendChild(div);
                 };
             })(file, i);
@@ -123,7 +130,6 @@ function refreshContent() {
     location.reload(); // Merefresh halaman
 }
 
-
 function showNotification(message) {
     var notification = document.getElementById('notification');
     var notificationMessage = document.getElementById('notification-message');
@@ -137,7 +143,6 @@ function closeNotification() {
     notification.style.display = 'none';
     refreshContent(); // Merefresh konten setelah menutup notifikasi
 }
-
 </script>
 
 <style>
@@ -148,34 +153,31 @@ function closeNotification() {
     transform: translate(-50%, -50%);
     background-color: #8a8a8a;
     color: #fff;
-    padding: 15px; /* Reduce padding for smaller size */
+    padding: 15px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     display: none;
     max-width: 80%;
-    width: auto;
     text-align: center;
 }
 
 .notification-buttons {
-    margin-top: 10px; /* Add margin between message and buttons */
+    margin-top: 10px;
 }
 
 .home-button {
     background-color: blue;
     color: white;
     border: none;
-    padding: 5px 10px; /* Adjust padding for smaller size */
-    font-size: 14px; /* Reduce font size for smaller button */
+    padding: 5px 10px;
+    font-size: 14px;
     cursor: pointer;
 }
 
 .home-button:hover {
     background-color: darkblue;
 }
-
-
 
 .preview-container {
     display: flex;
@@ -208,13 +210,12 @@ function closeNotification() {
     background: darkred;
 }
 
-.profile {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.card {
+    margin-top: 50px;
+    color: white;
 }
 
-
-
+.card-header {
+    text-align: center;
+}
 </style>

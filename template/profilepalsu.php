@@ -144,6 +144,10 @@ $koneksi->close();
 ?>
 
 <?php include "header.php"; ?>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -218,16 +222,18 @@ $koneksi->close();
             flex-grow: 1;
             width: 100%;
         }
+.profile-card {
+    width: calc(100% - 40px); /* Atur sesuai kebutuhan */
+    max-width: 656px;
+    padding: 20px;
+    background-color: #11174F;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #1193D3;
+    text-align: center;
+    color: white;
+    margin: 20px; /* Atur sesuai kebutuhan */
+}
 
-        .profile-card {
-            width: 70%;
-            max-width: 656px;
-            padding: 20px;
-            background-color: #11174F;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #1193D3;
-            text-align: center;
-        }
 
         .profile-header {
             display: flex;
@@ -360,11 +366,11 @@ $koneksi->close();
 
    
     <div class="content">
-        <div class="profile-card">
+        <div class="profile-card" >
             <div class="profile-header">
                 <img id="profileImage" src="<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile Image">
                 <div class="profile-username">
-                    <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                    <h4 ><?php echo htmlspecialchars($user['name']); ?></h4>
                     <h5><?php echo htmlspecialchars($user['username']); ?></h5>
                 </div>
             </div>
@@ -431,7 +437,6 @@ $koneksi->close();
     </div>
 </div>
 
-// Script untuk menampilkan modal edit profile
 <script>
     var modal = document.getElementById('editProfileModal');
     var editProfileButton = document.getElementById('editProfileButton');
@@ -469,7 +474,6 @@ $koneksi->close();
         reader.readAsDataURL(file);
     }
 </script>
-
 
 
     <!-- BAGIAN KONTEN USER -->
