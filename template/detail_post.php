@@ -240,6 +240,7 @@ $comments_result = mysqli_stmt_get_result($stmt);
 </div>
 
 <style>
+    
 .horizontal-scroll {
     overflow-x: auto;
     white-space: nowrap;
