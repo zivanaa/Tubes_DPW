@@ -410,7 +410,7 @@ if (isset($_GET['search'])) {
                         echo "</td>";
                         echo "<td>" . $row['created_at'] . "</td>";
                         echo "<td class='action-buttons'>";
-                        echo "<button onclick=\"openUpdateModal('" . $row['id'] . "', '" . $row['user_id'] . "', '" . addslashes($row['content']) . "', '" . addslashes($row['image']) . "', '" . $row['created_at'] . "')\">Update</button>";
+                       
                         echo "<button onclick=\"openDeleteForm('" . $row['id'] . "')\">Hapus</button>";
                         echo "</td>";
                         echo "</tr>";
