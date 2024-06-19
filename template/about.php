@@ -102,15 +102,15 @@
                     <h3>Fauzan Rofif Ardiyanto</h3>
                 </div>
                 <div class="col-md-4 team-item">
-                    <img style="width  : 120px; height:auto" src="../assets/img/candra.png" alt="Team Member 4">
+                    <img style="width  : 250px; height:auto" src="../assets/img/candra.png" alt="Team Member 4">
                     <h3>Dwi Candra Pratama</h3>
                 </div>
                 <div class="col-md-4 team-item">
-                    <img style="width  : 200px; height:auto" src="../assets/img/ricky.png" alt="Team Member 5">
+                    <img style="width  : 190px; height:auto" src="../assets/img/ricky.png" alt="Team Member 5">
                     <h3>Ricky Revenando</h3>
                 </div>
                 <div class="col-md-4 team-item">
-                    <img style="width  : 250px; height:auto" src="../assets/img/tmo.png" alt="Team Member 6">
+                    <img style="width  : 250px; height:auto" src="../assets/img/ahmad.png" alt="Team Member 6">
                     <h3>Nurul Ahmad</h3>
                 </div>
             </div>
