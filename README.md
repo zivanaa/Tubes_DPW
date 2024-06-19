@@ -7,4 +7,5 @@ oleh :
 3. fauzan rofif ardiyanto   2211104036
 4. zivana afra yulianto     2211104039
 5. dewi atika muthi         2211104042
+6. Ricky revenando          2211104047
 
