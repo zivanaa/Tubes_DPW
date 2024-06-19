@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
 
     // Proses unggah gambar
     // Tentukan direktori tempat untuk menyimpan file
-    $upload_dir = "../assets/reports/";
+    $upload_dir = "assets/report/";
 
     // Pastikan direktori eksis sebelum menyimpan file
     if (!is_dir($upload_dir)) {
@@ -128,7 +128,7 @@ mysqli_close($koneksi);
 
         <form action="" method="post" enctype="multipart/form-data">
             <label for="reporter_username">Username Pelapor:</label>
-            <input type="text" id="reporter_username" name="reporter_username" value="<?php echo $user_name; ?>" readonly class="form-control"><br>
+            <input type="text" id="reporter_username" name="reporter_username" value="<?php echo $_SESSION['username']; ?>" readonly class="form-control"><br>
 
             <label>Kategori Pelanggaran:</label>
             <div class="form-check">

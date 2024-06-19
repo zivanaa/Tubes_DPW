@@ -10,10 +10,10 @@ if (!isset($_SESSION['user_id'])) {
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<div class="container" >
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card mt-5" style="background-color: #11174F;">
+<div class="container d-flex justify-content-center align-items-centerontainer"  >
+    <div class="justify-content-center" style="text-align:center">
+        <div class="col-md-12">
+            <div class="card mt-12 " style="background-color: #11174F;">
                 <div class="card-header">
                     <h2>Upload Konten</h2>
                 </div>
@@ -213,6 +213,8 @@ function closeNotification() {
 .card {
     margin-top: 50px;
     color: white;
+    max-width:100%;
+    position: center;
 }
 
 .card-header {

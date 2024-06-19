@@ -2,10 +2,11 @@
 session_start();
 
 // Periksa apakah pengguna sudah login
-if (!isset($_SESSION['user_id'])|| $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit();
 }
+
 // Koneksi ke database
 $koneksi = mysqli_connect("localhost", "root", "", "db_itsave");
 
@@ -22,13 +23,13 @@ $message = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['update'])) {
         $id = $_POST['id'];
-        $name = $_POST['name'];
-        $username = $_POST['username'];
-        $email = $_POST['email'];
-        $role = $_POST['role'];
+        $reporter_username = $_POST['reporter_username'];
+        $violation_category = $_POST['violation_category'];
+        $description = $_POST['description'];
+        $evidence = $_POST['evidence'];
 
-        // Update data pengguna
-        $query = "UPDATE users SET name='$name', username='$username', email='$email', role='$role' WHERE id='$id'";
+        // Update data laporan
+        $query = "UPDATE reports SET reporter_username='$reporter_username', violation_category='$violation_category', description='$description', evidence='$evidence' WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
             $message = "Data berhasil diperbarui!";
         } else {
@@ -37,16 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (isset($_POST['delete'])) {
         $id = $_POST['id'];
 
-        // Hapus data terkait di tabel posts
-        $query = "DELETE FROM posts WHERE user_id='$id'";
+        // Hapus data laporan
+        $query = "DELETE FROM reports WHERE id='$id'";
         if (mysqli_query($koneksi, $query)) {
-            // Hapus data pengguna
-            $query = "DELETE FROM users WHERE id='$id'";
-            if (mysqli_query($koneksi, $query)) {
-                $message = "Data berhasil dihapus!";
-            } else {
-                $message = "Error: " . mysqli_error($koneksi);
-            }
+            $message = "Data berhasil dihapus!";
         } else {
             $message = "Error: " . mysqli_error($koneksi);
         }
@@ -203,7 +198,7 @@ if (isset($_GET['search'])) {
             margin-top: 10px;
         }
 
-        #updateModal input {
+        #updateModal input, #updateModal textarea {
             padding: 8px;
             margin-top: 5px;
             border: 1px solid #ddd;
@@ -291,12 +286,12 @@ if (isset($_GET['search'])) {
         }
     </style>
     <script>
-        function openModal(userId, name, username, email, role) {
-            document.getElementById('updateUserId').value = userId;
-            document.getElementById('updateName').value = name;
-            document.getElementById('updateUsername').value = username;
-            document.getElementById('updateEmail').value = email;
-            document.getElementById('updateRole').value = role;
+        function openModal(id, reporter_username, violation_category, description, evidence) {
+            document.getElementById('updateReportId').value = id;
+            document.getElementById('updateReporterUsername').value = reporter_username;
+            document.getElementById('updateViolationCategory').value = violation_category;
+            document.getElementById('updateDescription').value = description;
+            document.getElementById('updateEvidence').value = evidence;
             document.getElementById('updateModal').style.display = 'block';
         }
 
@@ -304,9 +299,9 @@ if (isset($_GET['search'])) {
             document.getElementById('updateModal').style.display = 'none';
         }
 
-        function deleteUser(userId) {
-            if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-                document.getElementById('deleteUserId').value = userId;
+        function deleteReport(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus laporan ini?')) {
+                document.getElementById('deleteReportId').value = id;
                 document.getElementById('deleteForm').submit();
             }
         }
@@ -341,13 +336,12 @@ if (isset($_GET['search'])) {
                 <li><a href="reg_advo.php">Registrasi Advokad</a></li>
                 <li><a href="kelola_user.php">Kelola User</a></li>
                 <li><a href="kelola_konten.php">Kelola Konten</a></li>
-                <li><a href="report.php">Report</a></li>
                 <li><a href="../page.php?mod=home">Home</a></li>
                 <li><a href="logout.php">Logout</a></li>
             </ul>
         </aside>
         <main class="main-content">
-            <h1 style="text-align: center;">Data Pengguna</h1>
+            <h1 style="text-align: center;">Data Laporan</h1>
 
             <!-- Search Bar -->
             <div class="search-bar">
@@ -360,43 +354,45 @@ if (isset($_GET['search'])) {
             <table>
                 <thead>
                     <tr>
-                        <th>Nama</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
+                        <th>ID</th>
+                        <th>Username Pelapor</th>
+                        <th>Kategori Pelanggaran</th>
+                        <th>Deskripsi</th>
+                        <th>Bukti</th>
                         <th>Tanggal Dibuat</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    // Query untuk mendapatkan data pengguna dengan filter pencarian
-                    $query = "SELECT id, name, username, email, role, created_at FROM users";
+                    // Query untuk mendapatkan data laporan dengan filter pencarian
+                    $query = "SELECT id, reporter_username, violation_category, description, evidence, created_at FROM reports";
                     if (!empty($search)) {
-                        $query .= " WHERE name LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
-                                    username LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
-                                    email LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
-                                    role LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%'";
+                        $query .= " WHERE reporter_username LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    violation_category LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    description LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%' OR 
+                                    evidence LIKE '%" . mysqli_real_escape_string($koneksi, $search) . "%'";
                     }
                     $result = mysqli_query($koneksi, $query);
 
-                    // Tampilkan data pengguna dalam bentuk tabel
+                    // Tampilkan data laporan dalam bentuk tabel
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
                             echo "<tr>";
-                            echo "<td>" . $row['name'] . "</td>";
-                            echo "<td>" . $row['username'] . "</td>";
-                            echo "<td>" . $row['email'] . "</td>";
-                            echo "<td>" . $row['role'] . "</td>";
+                            echo "<td>" . $row['id'] . "</td>";
+                            echo "<td>" . $row['reporter_username'] . "</td>";
+                            echo "<td>" . $row['violation_category'] . "</td>";
+                            echo "<td>" . $row['description'] . "</td>";
+                            echo "<td><a href='../assets/report/" . $row['evidence'] . "' target='_blank'>View</a></td>";
                             echo "<td>" . $row['created_at'] . "</td>";
                             echo "<td class='action-buttons'>";
-                            echo "<button onclick=\"openModal('".$row['id']."', '".$row['name']."', '".$row['username']."', '".$row['email']."', '".$row['role']."')\">Update</button>";
-                            echo "<button onclick=\"deleteUser('".$row['id']."')\">Hapus</button>";
+                            echo "<button onclick=\"openModal('".$row['id']."', '".$row['reporter_username']."', '".$row['violation_category']."', '".$row['description']."', '".$row['evidence']."')\">Update</button>";
+                            echo "<button onclick=\"deleteReport('".$row['id']."')\">Hapus</button>";
                             echo "</td>";
                             echo "</tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='6' style='text-align:center;'>Data tidak terdaftar</td></tr>";
+                        echo "<tr><td colspan='7' style='text-align:center;'>Data tidak terdaftar</td></tr>";
                     }
 
                     // Bebaskan hasil query
@@ -411,28 +407,23 @@ if (isset($_GET['search'])) {
             <!-- Modal Form for Update -->
             <div id="updateModal">
                 <form id="updateForm" method="post">
-                    <input type="hidden" name="id" id="updateUserId">
-                    <label for="updateName">Name:</label>
-                    <input type="text" name="name" id="updateName" required>
-                    <label for="updateUsername">Username:</label>
-                    <input type="text" name="username" id="updateUsername" required>
-                    <label for="updateEmail">Email:</label>
-                    <input type="email" name="email" id="updateEmail" required>
-                    <label for="updateRole">Role:</label>
-                    <select name="role" id="updateRole" required>
-                        <option value="admin">admin</option>
-                        <option value="advokad">advokad</option>
-                        <option value="user">user</option>
-                    </select>
+                    <input type="hidden" name="id" id="updateReportId">
+                    <label for="updateReporterUsername">Username Pelapor:</label>
+                    <input type="text" name="reporter_username" id="updateReporterUsername" required>
+                    <label for="updateViolationCategory">Kategori Pelanggaran:</label>
+                    <input type="text" name="violation_category" id="updateViolationCategory" required>
+                    <label for="updateDescription">Deskripsi:</label>
+                    <textarea name="description" id="updateDescription" required></textarea>
+                    <label for="updateEvidence">Bukti:</label>
+                    <input type="text" name="evidence" id="updateEvidence" required>
                     <button type="submit" name="update">Update</button>
                     <button type="button" class="cancel-button" onclick="closeModal()">Cancel</button>
                 </form>
             </div>
 
-
             <!-- Form for Delete -->
             <form id="deleteForm" method="post" style="display:none;">
-                <input type="hidden" name="id" id="deleteUserId">
+                <input type="hidden" name="id" id="deleteReportId">
                 <input type="hidden" name="delete" value="true">
             </form>
 
@@ -441,11 +432,10 @@ if (isset($_GET['search'])) {
                 <p id="messagePopupText"></p>
                 <button onclick="closeMessagePopup()">Close</button>
             </div>
+        </main>
     </div>
-    </body>
-
     <footer class="footer">
         <p>&copy; 2024 Admin Panel</p>
     </footer>
-
+</body>
 </html>

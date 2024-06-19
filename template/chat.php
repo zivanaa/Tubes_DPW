@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
     <div class="contacts">
         <?php foreach ($contacts as $contact): ?>
             <div class="contact" data-id="<?= $contact['id'] ?>">
-                <img src="<?= $contact['profile_image'] ?>" alt="Profile">
+                <img src="<?= !empty($contact['profile_image']) ? htmlspecialchars($contact['profile_image']) : 'assets/profile/none.png' ?>" alt="User Image" alt="Profile">
                 <div class="details">
                     <div class="name"><?= $contact['name'] ?></div>
                 </div>
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['receiver_id']) && isse
 
     <div class="chat-section">
         <div class="chat-header">
-            <img id="contact-profile-image" src="<?= isset($selected_contact['profile_image']) ? $selected_contact['profile_image'] : ''; ?>" alt="Profile" style="display: <?= isset($selected_contact['profile_image']) ? 'block' : 'none'; ?>;">
+            <img id="contact-profile-image" src="<?= !empty($selected_contact['profile_image']) ? htmlspecialchars($selected_contact['profile_image']) : 'assets/profile/none.png' ?>" alt="User Image" style="width: 50px; height: 50px; 'block' : 'none'; ?>;">
             <div id="contact-name"><?= isset($selected_contact['name']) ? $selected_contact['name'] : ''; ?></div>
         </div>
 
